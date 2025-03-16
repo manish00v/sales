@@ -1,0 +1,92 @@
+/* Container styling */
+.notification-settings-container {
+  width: 373px;
+  padding: 30px;
+  border: 1px solid #cbc0c0;
+  position: absolute;
+  right: 0;
+  background-color: white;
+}
+
+/* Title styling */
+.notification-settings-title {
+  font-size: 1.8rem;
+  color: #000000;
+  margin-bottom: 20px;
+  text-align: start;
+}
+
+/* Status text styling */
+.notification-settings-status {
+  font-size: 1rem;
+  color: #333333;
+  margin-bottom: 20px;
+}
+
+/* Buttons container styling */
+.notification-settings-buttons {
+  margin-bottom: 20px;
+}
+
+/* Button styling */
+.notification-settings-button {
+  padding: 12px 25px;
+  background-color: #4f46e5;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-right: 10px;
+}
+
+.notification-settings-button:hover {
+  background-color: #7671cc;
+}
+
+/* Notifications list styling */
+.notification-settings-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Notification item styling */
+.notification-settings-item {
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  color: #333333;
+}
+
+.notification-settings-item-unread {
+  background-color: #e3f2fd;
+}
+
+.notification-settings-item-read {
+  background-color: #f9f9f9;
+}
+
+/* Notification history title styling */
+.notification-settings-history-title {
+  font-size: 1.5rem;
+  color: #000000;
+  margin-bottom: 10px;
+  border-bottom: 2px solid #4f46e5;
+  padding-bottom: 10px;
+}
+
+/* Notification history item styling */
+.notification-settings-history-item {
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background-color: #f9f9f9;
+  font-size: 1rem;
+  color: #333333;
+}

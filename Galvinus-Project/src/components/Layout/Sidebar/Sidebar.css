@@ -1,0 +1,175 @@
+/* Sidebar Styling */
+.sidebar {
+  /* grid-area: sidebar; */
+  width: 18rem;
+  height: 100vh;
+  background-color: #ffffff;
+  padding: 10px;
+  position: fixed;
+  left: 0;
+  top: 80px;
+  color: #333;
+  border-right: 2px solid #ddd;
+  transition: 0.3s ease-in-out;
+  overflow-y: auto;
+  padding-bottom: 20px;
+  z-index: 500;
+}
+
+/* Sidebar Header */
+.sidebar h1 {
+  font-size: 1.5rem;
+  color: #444;
+  padding: 5px 0 10px 0;
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 0;
+  /* border-bottom: 2px solid #ddd; */
+}
+
+/* Sidebar List */
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  position: relative;
+}
+
+.sidebar > ul > li {
+  margin: 0;
+}
+
+/* Sidebar Links and Buttons */
+.sidebar ul li a,
+.sidebar ul li button {
+  color: #333;
+  text-decoration: none;
+  padding: 15px 20px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  outline: none;
+  border: none;
+  background: none;
+  font-size: 1rem;
+  transition: 0.3s ease-in-out;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+}
+
+/* Sidebar Icons */
+.sidebar ul li a i,
+.sidebar ul li button i {
+  width: 22px;
+  text-align: center;
+  font-size: 1.2rem;
+  color: #555;
+  transition: 0.3s ease-in-out;
+}
+
+/* Hover Effects */
+.sidebar ul li a:hover,
+.sidebar ul li button:hover {
+  background-color: #ddd;
+  color: #007bff;
+}
+
+/* Active Menu Item */
+.sidebar ul li.active > button {
+  background-color: #007bff;
+  color: #fff;
+  border-radius: 5px;
+}
+
+/* Active Icons */
+.sidebar ul li.active > button i {
+  color: #fff;
+}
+
+/* Submenu Styling */
+.submenu {
+  list-style: none;
+  display: none;
+  transition: 0.3s ease-in-out;
+  margin-left: 15px; /* Indentation */
+  background-color: #fff;
+}
+
+/* Submenu Active */
+.submenu.active {
+  display: block;
+  padding: 5px 0;
+}
+
+/* Submenu Links */
+.submenu li button {
+  padding: 10px 20px !important; /* More indentation */
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.9rem;
+  color: #555;
+  transition: 0.3s ease-in-out;
+  margin-left: 30px;
+}
+
+/* Submenu Hover Effects */
+.submenu li button:hover {
+  background-color: #ddd;
+  color: #007bff;
+}
+
+/* Sub-Submenu Styling */
+.subsubmenu {
+  list-style: none;
+  display: none;
+  background-color: #fff;
+  margin-left: 30px; /* Further indentation */
+}
+
+/* Subsubmenu Active */
+.subsubmenu.active {
+  display: block;
+  width: 100%;
+  padding: 5px 0;
+}
+
+/* Subsubmenu Links */
+.subsubmenu li a {
+  padding: 10px 20px !important; /* More indentation */
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.9rem;
+  color: #666;
+  transition: 0.3s ease-in-out;
+  margin-left: 60px;
+}
+
+/* Subsubmenu Hover Effects */
+.subsubmenu li a:hover {
+  background-color: #ddd;
+  color: #007bff;
+}
+
+/* Sidebar Responsiveness */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 220px;
+  }
+}
+
+/* Smooth Accordion Effect */
+.submenu,
+.subsubmenu {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease-in-out;
+}
+
+.submenu.active,
+.subsubmenu.active {
+  max-height: 500px;
+  overflow: visible;
+}

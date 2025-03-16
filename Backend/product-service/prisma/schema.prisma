@@ -1,0 +1,77 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  productId            Int      @id @default(autoincrement())
+  productName          String
+  category             String
+  description          String?
+  unitOfMeasurement    String?
+  stockStatus          String
+  weightVolume         String @default("")
+
+  pricingRules  PricingRules[] // Relationship to PricingRules
+  discountRules DiscountRules[] // Relationship to DiscountRules
+  discounts     Discount[] // Relationship to Discount
+}
+
+model Discount {
+    discountId                    Int    @id   //Foregin key to Discount Rules
+    productId                     Int         // Foreign key to Product
+    discountCriteria              String
+    productDiscount               Float
+    customerDiscount              Float
+    discountEligibilityCondition  String
+    discountValue                 Float
+   
+
+    
+    // Relationship to Product
+    product                      Product  @relation(fields: [productId], references: [productId])
+    discountRules                DiscountRules @relation(fields: [discountId], references: [discountId])
+}
+
+
+model DiscountRules {
+    discountId           Int      @id @default(autoincrement())
+    productId            Int      // Foreign key to Product
+    applicableTo         String   // e.g., "All Customers", "First-time Customers"
+    criteria             String?  // e.g., "Minimum Purchase Amount"
+    discountType         String   // e.g., "Percentage", "Fixed Amount"
+    discountValue        Float
+    effectiveDate        DateTime
+    expiryDate           DateTime
+
+    // Relationship to Product
+    product              Product  @relation(fields: [productId], references: [productId])
+    pricingRules         PricingRules[] // Relationship to PricingRules
+    discount             Discount[]     // Relationship to Discount
+}
+
+
+model PricingRules {
+    ruleId          Int      @id @default(autoincrement())
+    productId       Int      // Foreign key to Product
+    discountId      Int    // Foreign key to Discount (optional)
+    customerGroup   String   // e.g., "VIP", "Regular"
+    region          String   // e.g., "North America", "Europe"
+    basePrice       Float
+    effectiveDate   DateTime
+    expireDate      DateTime
+
+    // Relationships
+    product             Product  @relation(fields: [productId], references: [productId])
+    discountRules       DiscountRules @relation(fields: [discountId], references: [discountId])
+}

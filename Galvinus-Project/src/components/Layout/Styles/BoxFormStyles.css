@@ -1,0 +1,88 @@
+/* Container Styling */
+.container {
+  grid-area: content;
+  padding: 30px;
+}
+
+/* Form Layout */
+.form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Page Header */
+.form-container > h2 {
+  padding: 10px;
+  border-radius: 8px;
+  background: linear-gradient(to right, #1f4529, #47663b);
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+  text-align: left;
+  color: #fff;
+}
+
+/* Header & Item Box */
+.header-box,
+.item-box {
+  padding: 20px;
+  border-radius: 6px;
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+}
+
+.header-box {
+  margin-bottom: 20px;
+  background: linear-gradient(to right, #003c43, #135d66);
+}
+
+.item-box {
+  background: linear-gradient(to right, #a61e2e, #be5c51);
+}
+
+/* Section Headings */
+.header-box h2,
+.item-box h2 {
+  font-size: 20px;
+  margin-bottom: 10px;
+  color: #fff;
+  text-align: right;
+}
+
+/* Keeping only two items in a row */
+.data-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+/* Labels */
+label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: bold;
+  color: #fff;
+}
+
+/* Inputs & Select */
+input,
+select {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: border-color 0.3s;
+}
+
+/* Focus Effect */
+input:focus,
+select:focus {
+  border-color: #4f46e5;
+  outline: none;
+}
+
+/* Dropdown Select */
+select {
+  background-color: white;
+  cursor: pointer;
+}

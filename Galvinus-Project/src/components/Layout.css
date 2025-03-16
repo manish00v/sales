@@ -1,0 +1,10 @@
+.main-content {
+  position: relative;
+  left: 18rem;
+  top: 80px;
+  /* background-color: #f8f9fa; */
+  height: calc(100vh - 80px); /* Full height minus navbar */
+  width: calc(100vw - 18rem) !important;
+  overflow-y: auto; /* Enables scrolling */
+  z-index: 1;
+}

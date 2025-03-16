@@ -1,0 +1,110 @@
+/* Center the form in the middle of the page */
+
+html, body.login-page {
+  height: 100%;
+  margin: 0;
+}
+
+body.login-page {
+  /* background-color: #eee; */
+  position: relative;
+  min-height: 100vh;
+}
+
+.logo-box {
+  padding-left: 155px;
+  padding-bottom: 1px;
+}
+
+.logo-box img {
+  width: 50px;
+  height: auto;
+  border-radius: 50%;
+  border: 1.8px solid #945ad3;
+  /* padding: 3px; */
+  background: #fff;
+}
+.auth-form {
+  width: 400px; 
+  padding: 20px;
+  border-radius: 8px;
+  background-color: #Afeeee;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.auth-form h2 {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.auth-form input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.auth-form button {
+  width: 100%;
+  padding: 10px;
+  background-color: #1c1cc6;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.auth-form button:hover {
+  background-color: #281662;
+}
+
+.auth-form p {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.auth-form a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.auth-form a:hover {
+  text-decoration: underline;
+}
+
+/* src/login.css */
+.error {
+  color: rgb(0, 0, 0);
+  font-size: 0.9em;
+  margin-bottom: 10px;
+}
+
+.error-message {
+  color: red;
+  font-size: 14px;
+  margin-top: 10px;
+}
+
+@media (max-width: 480px) {
+  .auth-form {
+    width: 100%; /* Full width for very small screens */
+    padding: 10px;
+  }
+
+  .auth-form h2 {
+    font-size: 1.2em; /* Further reduce heading size */
+  }
+
+  .auth-form input {
+    padding: 6px; /* Further reduce input padding */
+  }
+
+  .auth-form button {
+    padding: 6px; /* Further reduce button padding */
+  }
+}
