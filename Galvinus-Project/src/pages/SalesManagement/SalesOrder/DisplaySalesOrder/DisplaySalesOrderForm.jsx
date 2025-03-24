@@ -45,9 +45,9 @@ export default function DisplaySalesOrderForm() {
                 console.log("Extracted sales order:", salesOrder); // Debugging
 
                 // Check if the fetched sales order matches the provided orderId and customerId
-                if (salesOrder.orderId !== parseInt(orderId) || salesOrder.customerId !== parseInt(customerId)) {
-                    throw new Error("Order ID and Customer ID do not match");
-                }
+                // if (salesOrder.orderId !== orderId || salesOrder.customerId !== customerId) {
+                //     throw new Error("Order ID and Customer ID do not match");
+                // }
 
                 // Populate the form data if the sales order is found
                 setFormData({

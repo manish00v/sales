@@ -55,8 +55,8 @@ class DiscountRulesController {
     
             const formattedData = {
                 ...discountRuleData,
-                discountId: parseInt(discountRuleData.discountId, 10),
-                productId: parseInt(discountRuleData.productId, 10),
+                discountId: String(discountRuleData.discountId),
+                productId: String(discountRuleData.productId),
                 discountValue: parseFloat(discountRuleData.discountValue), // Convert to float
                 effectiveDate: new Date(discountRuleData.effectiveDate).toISOString(), // Convert to ISO-8601
                 expiryDate: new Date(discountRuleData.expiryDate).toISOString(), // Convert to ISO-8601

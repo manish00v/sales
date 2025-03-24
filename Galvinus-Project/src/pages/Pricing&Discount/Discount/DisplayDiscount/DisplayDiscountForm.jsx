@@ -31,7 +31,7 @@ export default function DisplayDiscountForm() {
                 }
 
                 console.log("Fetching discount details with discountId:", discountId, "and productId:", productId); // Debugging
-                const response = await fetch(`http://localhost:3000/api/discounts/${discountId}/${productId}`);
+                const response = await fetch(`http://localhost:3001/api/discounts/${discountId}/${productId}`);
                 if (!response.ok) {
                     throw new Error("Discount details not found");
                 }
@@ -43,9 +43,9 @@ export default function DisplayDiscountForm() {
                 console.log("Extracted discount details:", discountDetails); // Debugging
 
                 // Check if the fetched discount details match the provided discountId and productId
-                if (discountDetails.discountId !== parseInt(discountId) || discountDetails.productId !== parseInt(productId)) {
-                    throw new Error("Discount ID and Product ID do not match");
-                }
+                // if (discountDetails.discountId !== parseInt(discountId) || discountDetails.productId !== parseInt(productId)) {
+                //     throw new Error("Discount ID and Product ID do not match");
+                // }
 
                 // Populate the form data if the discount details are found
                 setFormData({

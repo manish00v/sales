@@ -8,72 +8,68 @@ generator client {
 }
 
 model Customer {
-  customerId          Int    @id @default(autoincrement())
-  productId           String? // relation with product-service (you need to define it properly)
-  orderId             Int?
-  customerName        String
-  emailId             String
-  phoneNumber         String
-  billingAddress      String
-  shippingAddress     String
-  customerGroup       String
-  creditLimit         Float
-  status              String
-
-  // Relationships
-  lineItems           LineItems[]
-  salesPersons        SalesPerson[] // Renamed to plural for clarity
-  salesOrder          SalesOrder[]
-  // salesOrder          SalesOrder    @relation(fields: [orderId], references: [orderId])
-}
-
-model SalesOrder {
-  orderId         Int   @id @default(autoincrement())
-  customerId      Int
-  productId       String   
-  orderDate       DateTime  @default(now()) 
-  requiredDate    DateTime  @default(now()) 
-  orderStatus     String @default("Pending")
-  paymentStatus   String  @default("Unpaid") 
-  deliveryBlock   String @default("pending") 
-  totalAmount     Float @default(0)
+  customerId      String       @id @default(uuid())
+  productId       String 
+  customerName    String
+  emailId         String       
+  phoneNumber     String
+  billingAddress  String
+  shippingAddress String
+  customerGroup   String
+  creditLimit     Float
+  status          String
 
   // Relationships
   lineItems       LineItems[]
-  salesPersons    SalesPerson[] // Relationship to SalesPerson
-  customer        Customer        @relation(fields: [customerId], references: [customerId])
-  // customer        Customer[]
+  salesPersons    SalesPerson[]
+  salesOrders     SalesOrder[]
+}
+
+model SalesOrder {
+  orderId         String      @id @default(uuid())
+  customerId      String
+  productId       String
+  orderDate       DateTime    @default(now())
+  requiredDate    DateTime    @default(now())
+  orderStatus     String      @default("Pending")
+  paymentStatus   String      @default("Unpaid")
+  deliveryBlock   String      @default("pending")
+  totalAmount     Float       @default(0)
+
+  // Relationships
+  lineItems       LineItems[]
+  salesPersons    SalesPerson[]
+  customer        Customer    @relation(fields: [customerId], references: [customerId])
 }
 
 model LineItems {
-  orderLineItemId   Int @id @default(autoincrement())
-  orderId           Int
-  productId         Int
-  customerId        Int
-  quantity          Int
-  unitPrice         Float
-  discount          Float
-  tax              Float
-  totalLinePrice    Float
+  orderLineItemId String      @id @default(uuid())
+  orderId         String
+  productId       String
+  customerId      String
+  quantity        Int
+  unitPrice       Float
+  discount        Float
+  tax             Float
+  totalLinePrice  Float
 
   // Relationships
-  salesOrder    SalesOrder @relation(fields: [orderId], references: [orderId])
-  customer      Customer   @relation(fields: [customerId], references: [customerId])
+  salesOrder      SalesOrder  @relation(fields: [orderId], references: [orderId])
+  customer        Customer    @relation(fields: [customerId], references: [customerId])
 }
 
 model SalesPerson {
-  salesPersonId    Int @id @default(autoincrement())
-  customerId       Int
-  orderId          Int
-  productId        Int
-  salesPersonName  String
-  emailId          String
-  phoneNumber      String
-  region           String
-  target           String
-
+  salesPersonId   String      @id @default(uuid())
+  customerId      String
+  orderId         String
+  productId       String
+  salesPersonName String
+  emailId         String     
+  phoneNumber     String
+  region          String
+  target          String  
 
   // Relationships
-  customer        Customer   @relation(fields: [customerId], references: [customerId])
-  salesOrder      SalesOrder @relation(fields: [orderId], references: [orderId])
+  customer        Customer    @relation(fields: [customerId], references: [customerId])
+  salesOrder      SalesOrder  @relation(fields: [orderId], references: [orderId])
 }

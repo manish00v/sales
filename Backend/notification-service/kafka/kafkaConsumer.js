@@ -1,40 +1,59 @@
 import { Kafka } from 'kafkajs';
-import NotificationService from '../services/notificationService.js';
 
 class KafkaConsumer {
     constructor() {
         this.kafka = new Kafka({
-            clientId: 'notification-service',
-            brokers: [process.env.KAFKA_BROKER || 'localhost:9092'], // Fallback to localhost:9092
+            clientId: process.env.KAFKA_CLIENT_ID || 'notification-service',
+            brokers: [process.env.KAFKA_BROKER || 'localhost:9092'],
         });
-        this.consumer = this.kafka.consumer({ groupId: 'notification-group' });
-        this.notificationService = new NotificationService(); // Instantiate NotificationService
+        this.consumer = this.kafka.consumer({ groupId: process.env.KAFKA_GROUP_ID || 'notification-group' });
     }
 
     async connect() {
-        await this.consumer.connect();
-        console.log('Kafka consumer connected');
+        try {
+            await this.consumer.connect();
+            console.log('Kafka consumer connected');
+        } catch (error) {
+            console.error('Error connecting Kafka consumer:', error);
+            throw error;
+        }
     }
 
     async subscribe(topics) {
-        for (const topic of topics) {
-            await this.consumer.subscribe({ topic, fromBeginning: true });
+        try {
+            for (const topic of topics) {
+                await this.consumer.subscribe({ topic, fromBeginning: true });
+            }
+            console.log(`Subscribed to topics: ${topics.join(', ')}`);
+        } catch (error) {
+            console.error('Error subscribing to topics:', error);
+            throw error;
         }
-        console.log(`Subscribed to topics: ${topics.join(', ')}`);
     }
 
-    async run() {
-        await this.consumer.run({
-            eachMessage: async ({ topic, partition, message }) => {
-                const { service, event, message: eventMessage } = JSON.parse(message.value.toString());
-                console.log(`Received event: ${event} from ${service}`);
+    async run(callback) {
+        try {
+            await this.consumer.run({
+                eachMessage: async ({ topic, partition, message }) => {
+                    callback({ topic, partition, message });
+                },
+            });
+            console.log('Kafka consumer is running...');
+        } catch (error) {
+            console.error('Error running Kafka consumer:', error);
+            throw error;
+        }
+    }
 
-                // Save notification
-                await this.notificationService.createNotification(service, event, eventMessage);
-            },
-        });
-        console.log('Kafka consumer is running...');
+    async disconnect() {
+        try {
+            await this.consumer.disconnect();
+            console.log('Kafka consumer disconnected');
+        } catch (error) {
+            console.error('Error disconnecting Kafka consumer:', error);
+            throw error;
+        }
     }
 }
 
-export default KafkaConsumer;
+export default KafkaConsumer; // Ensure this is the default export

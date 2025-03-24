@@ -23,7 +23,7 @@ router.get('/customers', (req, res) => customerController.getAllCustomers(req, r
 router.get(
   '/customers/:customerId',
   validate([
-    param('customerId').isNumeric().isLength({ max: 20 }),
+    param('customerId').isString().isLength({ max: 20 }),
   ]),
   (req, res) => customerController.getCustomerByCustomerId(req, res)
 );
@@ -32,7 +32,7 @@ router.get(
 router.get(
   '/customers/:customerId/:productId',
   validate([
-    param('customerId').isInt().isLength({ max: 20 }),
+    param('customerId').isString().isLength({ max: 20 }),
     param('productId').isString(),
   ]),
   (req, res) => customerController.getCustomerByCustomerIdAndProductId(req, res)
@@ -42,9 +42,9 @@ router.get(
 router.get(
   '/customers/:customerId/:productId/:orderId',
   validate([
-    param('customerId').isNumeric().isLength({ max: 20 }),
+    param('customerId').isString().isLength({ max: 20 }),
     param('productId').isString(),
-    param('orderId').isNumeric(),
+    param('orderId').isString(),
   ]),
   (req, res) => customerController.getCustomerByCustomerIdProductIdAndOrderId(req, res)
 );
@@ -53,7 +53,7 @@ router.get(
 router.put(
   '/customers/:customerId/:productId',
   validate([
-    param('customerId').isNumeric().isLength({ max: 20 }),
+    param('customerId').isString().isLength({ max: 20 }),
     param('productId').isString(),
     body('customerName').optional().isString().isLength({ max: 255 }),
     body('email').optional().isEmail().isLength({ max: 100 }),
@@ -71,7 +71,7 @@ router.put(
 router.post(
   '/customers',
   validate([
-    body('customerId').isNumeric().isLength({ max: 20 }),
+    body('customerId').isString().isLength({ max: 20 }),
     // body('productId'). 
     body('customerName').isString().isLength({ max: 255 }),
     body('emailId').isEmail().isLength({ max: 100 }),

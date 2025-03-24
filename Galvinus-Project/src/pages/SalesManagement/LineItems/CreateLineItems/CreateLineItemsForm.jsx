@@ -29,28 +29,28 @@ export default function CreateLineItemsForm() {
             // Check if lineItemId already exists
             const lineItemCheckResponse = await fetch(`http://localhost:3000/api/line-items/${formData.orderLineItemId}`);
             if (lineItemCheckResponse.ok) {
-                alert("Error: Line Item ID is already in the database.");
+                alert(`Error: Line Item ID ${formData.orderLineItemId} is already in the database.`);
                 return;
             }
 
             // Check if orderId exists in the database
             const orderCheckResponse = await fetch(`http://localhost:3000/api/sales-orders/${formData.orderId}`);
             if (!orderCheckResponse.ok) {
-                alert("Error: Order ID does not exist. Please create the order first.");
+                alert(`Error: Order ID ${formData.orderId} does not exist. Please create the order first.`);
                 return;
             }
 
             // Check if productId exists in the database
-            // const productCheckResponse = await fetch(`http://localhost:3000/api/products/${formData.productId}`);
-            // if (!productCheckResponse.ok) {
-            //     alert("Error: Product ID does not exist. Please create the product first.");
-            //     return;
-            // }
+            const productCheckResponse = await fetch(`http://localhost:3001/api/products/${formData.productId}`);
+            if (!productCheckResponse.ok) {
+                alert(`Error: Product ID ${formData.productId} does not exist. Please create the product first.`);
+                return;
+            }
 
             // Check if customerId exists in the database
             const customerCheckResponse = await fetch(`http://localhost:3000/api/customers/${formData.customerId}`);
             if (!customerCheckResponse.ok) {
-                alert("Error: Customer ID does not exist. Please create the customer first.");
+                alert(`Error: Customer ID ${formData.customerId} does not exist. Please create the customer first.`);
                 return;
             }
 
@@ -62,10 +62,10 @@ export default function CreateLineItemsForm() {
                 discount: parseFloat(formData.discount),
                 tax: parseFloat(formData.tax),
                 totalLinePrice: parseFloat(formData.totalLinePrice),
-                orderLineItemId: parseInt(formData.orderLineItemId),
-                orderId: parseInt(formData.orderId),
-                productId: parseInt(formData.productId),
-                customerId: parseInt(formData.customerId),
+                orderLineItemId: formData.orderLineItemId,
+                orderId: formData.orderId,
+                productId: formData.productId,
+                customerId: formData.customerId,
             };
 
             // Submit the line item
@@ -106,7 +106,7 @@ export default function CreateLineItemsForm() {
                             <div className="data">
                                 <label htmlFor="orderLineItemId">Order Line Item ID</label>
                                 <input
-                                    type="number"
+                                    type="text"
                                     id="orderLineItemId"
                                     name="orderLineItemId"
                                     placeholder="(Primary Key)"
@@ -119,7 +119,7 @@ export default function CreateLineItemsForm() {
                             <div className="data">
                                 <label htmlFor="orderId">Order ID</label>
                                 <input
-                                    type="number"
+                                    type="text"
                                     id="orderId"
                                     name="orderId"
                                     value={formData.orderId}
@@ -131,7 +131,7 @@ export default function CreateLineItemsForm() {
                             <div className="data">
                                 <label htmlFor="productId">Product ID</label>
                                 <input
-                                    type="number"
+                                    type="text"
                                     id="productId"
                                     name="productId"
                                     value={formData.productId}
@@ -143,7 +143,7 @@ export default function CreateLineItemsForm() {
                             <div className="data">
                                 <label htmlFor="customerId">Customer ID</label>
                                 <input
-                                    type="number"
+                                    type="text"
                                     id="customerId"
                                     name="customerId"
                                     value={formData.customerId}

@@ -10,7 +10,7 @@ const EditDiscountRulesPage = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Validate discountId
@@ -19,17 +19,25 @@ const EditDiscountRulesPage = () => {
       return;
     }
 
-    if (isNaN(discountId)) {
-      setError("Discount ID must be a number");
-      return;
-    }
+    try {
+      // Check if discountId exists in the database
+      const response = await fetch(`http://localhost:3001/api/discount-rules/${discountId}`);
+      if (!response.ok) {
+        // If discountId is not found, show an alert
+        alert(`Discount ID ${discountId} does not exist in the database.`);
+        return;
+      }
 
-    // If validation passes, navigate to the EditDiscountRulesForm page
-    navigate(`/editdiscountrulesform/${discountId}`);
+      // If discountId exists, navigate to the EditDiscountRulesForm page
+      navigate(`/editdiscountrulesform/${discountId}`);
+    } catch (error) {
+      console.error("Error checking discount ID:", error);
+      alert("An error occurred while checking the discount ID. Please try again.");
+    }
   };
 
   useEffect(() => {
-    setBtn("Edit");
+  
     setGoBackUrl("/discountrules");
   }, [setBtn, setGoBackUrl]);
 

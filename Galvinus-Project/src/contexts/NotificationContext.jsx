@@ -1,10 +1,7 @@
-// NotificationContext.js
 import { createContext, useState, useEffect } from "react";
 
-// Create the context
 export const NotificationContext = createContext();
 
-// Create the provider
 export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -33,6 +30,33 @@ export const NotificationProvider = ({ children }) => {
       window.removeEventListener("offline", handleOffline);
     };
   }, []);
+
+  // Connect to WebSocket server
+  useEffect(() => {
+    const ws = new WebSocket('ws://localhost:8080');
+
+    ws.onopen = () => {
+        console.log('WebSocket connection established');
+    };
+
+    ws.onmessage = (event) => {
+        console.log('WebSocket message received:', event.data);
+        const notification = JSON.parse(event.data);
+        addNotification(notification.type, notification.orderId);
+    };
+
+    ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+    };
+
+    ws.onclose = () => {
+        console.log('WebSocket connection closed');
+    };
+
+    return () => {
+        ws.close();
+    };
+}, []);
 
   // Add a new notification
   const addNotification = (type, orderId) => {

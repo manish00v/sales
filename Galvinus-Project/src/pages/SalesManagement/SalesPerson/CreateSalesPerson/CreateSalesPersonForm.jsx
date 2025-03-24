@@ -11,7 +11,7 @@ export default function CreateSalesPersonForm() {
         emailId: "",
         phoneNumber: "",
         region: "",
-        target: "",
+        target: "Monthly",
     });
 
     const handleChange = (e) => {
@@ -48,19 +48,19 @@ export default function CreateSalesPersonForm() {
             }
 
             // Check if productId exists in the database
-            // const productCheckResponse = await fetch(`http://localhost:3000/api/products/${formData.productId}`);
-            // if (!productCheckResponse.ok) {
-            //     alert("Error: Product ID does not exist. Please create the product first.");
-            //     return;
-            // }
+            const productCheckResponse = await fetch(`http://localhost:3001/api/products/${formData.productId}`);
+            if (!productCheckResponse.ok) {
+                alert("Error: Product ID does not exist. Please create the product first.");
+                return;
+            }
 
             // Format data for submission
             const formattedData = {
                 ...formData,
-                salesPersonId: parseInt(formData.salesPersonId),
-                customerId: parseInt(formData.customerId),
-                orderId: parseInt(formData.orderId),
-                productId: parseInt(formData.productId),
+                salesPersonId: formData.salesPersonId,
+                customerId: formData.customerId,
+                orderId: formData.orderId,
+                productId: formData.productId,
             };
 
             // Submit the sales person data
@@ -101,7 +101,7 @@ export default function CreateSalesPersonForm() {
                             <div className="data">
                                 <label htmlFor="salesPersonId">Sales Person ID</label>
                                 <input
-                                    type="number"
+                                    type="text"
                                     id="salesPersonId"
                                     name="salesPersonId"
                                     placeholder="(Primary Key)"
@@ -114,7 +114,7 @@ export default function CreateSalesPersonForm() {
                             <div className="data">
                                 <label htmlFor="customerId">Customer ID</label>
                                 <input
-                                    type="number"
+                                    type="text"
                                     id="customerId"
                                     name="customerId"
                                     value={formData.customerId}
@@ -126,7 +126,7 @@ export default function CreateSalesPersonForm() {
                             <div className="data">
                                 <label htmlFor="orderId">Order ID</label>
                                 <input
-                                    type="number"
+                                    type="text"
                                     id="orderId"
                                     name="orderId"
                                     value={formData.orderId}
@@ -138,7 +138,7 @@ export default function CreateSalesPersonForm() {
                             <div className="data">
                                 <label htmlFor="productId">Product ID</label>
                                 <input
-                                    type="number"
+                                    type="text"
                                     id="productId"
                                     name="productId"
                                     value={formData.productId}

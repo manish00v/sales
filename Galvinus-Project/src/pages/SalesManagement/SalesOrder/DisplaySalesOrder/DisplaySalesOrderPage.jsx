@@ -16,32 +16,45 @@ export default function DisplaySalesOrderPage() {
         setGoBackUrl("/salesorder");
     }, [setBtn, setGoBackUrl]);
 
-	const handleSubmit = (e) => {
-		e.preventDefault();
-	
-		// Validate orderId and customerId
-		if (!orderId || !customerId) {
-			setError("Order ID and Customer ID are required");
-			return;
-		}
-	
-		// Check if orderId and customerId are valid integers
-		if (isNaN(orderId) || !Number.isInteger(Number(orderId))) {
-			setError("Order ID must be a valid integer");
-			return;
-		}
-		if (isNaN(customerId) || !Number.isInteger(Number(customerId))) {
-			setError("Customer ID must be a valid integer");
-			return;
-		}
-	
-		// Log values for debugging
-		console.log("Navigating with Order ID:", orderId, "and Customer ID:", customerId);
-	
-		// Navigate to DisplaySalesOrderForm
-		navigate(`/displaysalesorderform/${orderId}/${customerId}`);
-	};
-	
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        // Validate orderId and customerId
+        if (!orderId || !customerId) {
+            setError("Order ID and Customer ID are required");
+            return;
+        }
+
+        try {
+            // Check if orderId exists in the order table
+            const orderResponse = await fetch(`http://localhost:3000/api/sales-orders/${orderId}`);
+            if (!orderResponse.ok) {
+                alert(`Order ID ${orderId} does not exist. Please create the Order ID first.`);
+                return;
+            }
+
+            // Check if customerId exists in the customer table
+            const customerResponse = await fetch(`http://localhost:3000/api/customers/${customerId}`);
+            if (!customerResponse.ok) {
+                alert(`Customer ID ${customerId} does not exist. Please create the Customer ID first.`);
+                return;
+            }
+
+            // Check if orderId is associated with customerId in the customer table
+            const associationResponse = await fetch(`http://localhost:3000/api/sales-orders/${orderId}/${customerId}`);
+            if (!associationResponse.ok) {
+                alert(`Order ID ${orderId} is not associated with Customer ID ${customerId}.`);
+                return;
+            }
+
+            // If all validations pass, navigate to DisplaySalesOrderForm
+            navigate(`/displaysalesorderform/${orderId}/${customerId}`);
+        } catch (error) {
+            console.error("Error during validation:", error);
+            alert("An error occurred during validation. Please try again.");
+        }
+    };
+
     return (
         <>
             <FormPageHeader />
@@ -57,7 +70,7 @@ export default function DisplaySalesOrderPage() {
                             <div className="data">
                                 <label htmlFor="orderId">Order ID</label>
                                 <input
-                                    type="number"
+                                    type="text"
                                     id="orderId"
                                     name="orderId"
                                     value={orderId}
@@ -66,18 +79,17 @@ export default function DisplaySalesOrderPage() {
                                 />
                             </div>
 
-							<div className="data">
-								<label htmlFor="customerId">Customer ID</label>
-								<input
-									type="number"
-									id="customerId"
-									name="customerId"
-									value={customerId}
-									onChange={(e) => setCustomerId(e.target.value)}
-									required
-								/>
-							</div>
-
+                            <div className="data">
+                                <label htmlFor="customerId">Customer ID</label>
+                                <input
+                                    type="text"
+                                    id="customerId"
+                                    name="customerId"
+                                    value={customerId}
+                                    onChange={(e) => setCustomerId(e.target.value)}
+                                    required
+                                />
+                            </div>
                         </div>
 
                         <button type="submit" className="submit-btn">

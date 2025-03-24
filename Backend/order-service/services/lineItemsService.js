@@ -33,11 +33,6 @@ async getLineItemByorderLineItemIdAndProductId(orderLineItemId, productId) {
     });
   }
 
-  async deleteLineItem(orderLineItemId) {
-    return this.prisma.lineItems.delete({
-      where: { orderLineItemId },
-    });
-  }
 
   async getAllLineItems() {
     return this.prisma.lineItems.findMany();

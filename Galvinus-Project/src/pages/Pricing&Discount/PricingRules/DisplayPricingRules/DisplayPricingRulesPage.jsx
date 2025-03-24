@@ -5,18 +5,18 @@ import FormPageHeader from "../../../../components/Layout/FormPageHeader/FormPag
 import "../../../../components/Layout/Styles/BoxFormStyles.css";
 
 export default function DisplayPricingRulesPage() {
-    const { setBtn, setGoBackUrl } = useContext(FormPageHeaderContext);
+    const {  setGoBackUrl } = useContext(FormPageHeaderContext);
     const [ruleId, setRuleId] = useState("");
     const [productId, setProductId] = useState("");
     const [error, setError] = useState(null); // State to store error messages
     const navigate = useNavigate();
 
     useEffect(() => {
-        setBtn("Display");
+       
         setGoBackUrl("/pricingrules");
-    }, [setBtn, setGoBackUrl]);
+    }, [ setGoBackUrl]);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         // Validate ruleId and productId
@@ -25,18 +25,36 @@ export default function DisplayPricingRulesPage() {
             return;
         }
 
-        // Check if ruleId and productId are valid numbers
-        if (isNaN(ruleId)) {
-            setError("Rule ID must be a number");
-            return;
-        }
-        if (isNaN(productId)) {
-            setError("Product ID must be a number");
-            return;
-        }
+        try {
+            // Check if ruleId exists in the database
+            const ruleCheckResponse = await fetch(`http://localhost:3001/api/pricing-rules/${ruleId}`);
+            if (!ruleCheckResponse.ok) {
+                alert(`Rule ID ${ruleId} does not exist in the database.`);
+                return;
+            }
 
-        // If validation passes, navigate to the DisplayPricingRulesForm page
-        navigate(`/displaypricingrulesform/${ruleId}/${productId}`);
+            // Check if productId exists in the database
+            const productCheckResponse = await fetch(`http://localhost:3001/api/products/${productId}`);
+            if (!productCheckResponse.ok) {
+                alert(`Product ID ${productId} does not exist in the database.`);
+                return;
+            }
+
+            // Check if the ruleId is associated with the productId
+            const ruleDetailsResponse = await fetch(`http://localhost:3001/api/pricing-rules/${ruleId}`);
+            const ruleDetails = await ruleDetailsResponse.json();
+
+            if (ruleDetails.productId !== productId) {
+                alert(`Rule ID ${ruleId} is not associated with Product ID ${productId}.`);
+                return;
+            }
+
+            // If all validations pass, navigate to the DisplayPricingRulesForm page
+            navigate(`/displaypricingrulesform/${ruleId}/${productId}`);
+        } catch (error) {
+            console.error("Error validating IDs:", error);
+            alert("An error occurred while validating the IDs. Please try again.");
+        }
     };
 
     return (

@@ -57,7 +57,6 @@ export default function EditCustomerForm() {
   }, [customerId, productId]);
 
   useEffect(() => {
-    setBtn("Save");
     setUrl(`/customer/${customerId}`);
     setGoBackUrl("/customer");
   }, [setBtn, setUrl, setGoBackUrl, customerId]);

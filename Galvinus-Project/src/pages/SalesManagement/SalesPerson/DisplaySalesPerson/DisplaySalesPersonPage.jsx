@@ -5,44 +5,72 @@ import FormPageHeader from "../../../../components/Layout/FormPageHeader/FormPag
 import "../../../../components/Layout/Styles/BoxFormStyles.css";
 
 export default function DisplaySalesPersonPage() {
-    const { setBtn, setGoBackUrl } = useContext(FormPageHeaderContext);
+    const { setGoBackUrl } = useContext(FormPageHeaderContext);
     const [salesPersonId, setSalesPersonId] = useState("");
     const [customerId, setCustomerId] = useState("");
-	const [orderId, setOrderId] = useState("");
-	const [productId, setProductId] = useState("");
-    const [error, setError] = useState(null); // State to store error messages
+    const [orderId, setOrderId] = useState("");
+    const [productId, setProductId] = useState("");
+    const [error, setError] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
-        setBtn("Display");
         setGoBackUrl("/salesperson");
-    }, [setBtn, setGoBackUrl]);
+    }, [setGoBackUrl]);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Validate salesPersonId and customerId
-        if (!salesPersonId || !customerId) {
-            setError("Sales Person ID and Customer ID are required");
+        // Validate all IDs are provided
+        if (!salesPersonId || !customerId || !orderId || !productId) {
+            setError("Sales Person ID, Customer ID, Order ID, and Product ID are required");
             return;
         }
 
-        // Check if salesPersonId and customerId are valid integers
-        if (isNaN(salesPersonId) || !Number.isInteger(Number(salesPersonId))) {
-            setError("Sales Person ID must be a valid integer");
-            return;
-        }
-        if (isNaN(customerId) || !Number.isInteger(Number(customerId))) {
-            setError("Customer ID must be a valid integer");
-            return;
-        }
+        try {
+            // 1. Check if salesPersonId exists
+            const salesPersonRes = await fetch(`http://localhost:3000/api/sales-persons/${salesPersonId}`);
+            if (!salesPersonRes.ok) {
+                alert(`Sales Person ID ${salesPersonId} does not exist. Please create sales person ID first.`);
+                return;
+            }
 
-        // Log values for debugging
-        console.log("Navigating with Sales Person ID:", salesPersonId, "and Customer ID:", customerId);
+            // 2. Check if customerId exists
+            const customerRes = await fetch(`http://localhost:3000/api/customers/${customerId}`);
+            if (!customerRes.ok) {
+                alert(`Customer ID ${customerId} does not exist. Please create customer ID first.`);
+                return;
+            }
 
-        // Navigate to DisplaySalesPersonForm
-		// "/displaysalespersonform/:salesPersonId/:customerId/:orderId/:productId"
-        navigate(`/displaysalespersonform/${salesPersonId}/${customerId}/${orderId}/${productId}`);
+            // 3. Check if orderId exists
+            const orderRes = await fetch(`http://localhost:3000/api/sales-orders/${orderId}`);
+            if (!orderRes.ok) {
+                alert(`Order ID ${orderId} does not exist. Please create order ID first.`);
+                return;
+            }
+
+            // 4. Check if productId exists
+            const productRes = await fetch(`http://localhost:3001/api/products/${productId}`);
+            if (!productRes.ok) {
+                alert(`Product ID ${productId} does not exist. Please create product ID first.`);
+                return;
+            }
+
+            // 5. Check if salesPersonId is associated with customerId, orderId, and productId
+            const associationRes = await fetch(
+                `http://localhost:3000/api/sales-persons/${salesPersonId}/${customerId}/${orderId}/${productId}`
+            );
+            if (!associationRes.ok) {
+                alert(`Sales Person ${salesPersonId} is not associated with the provided Customer ${customerId}, Order ${orderId}, and Product ${productId} combination.`);
+                return;
+            }
+
+            // All validations passed - navigate to display page
+            navigate(`/displaysalespersonform/${salesPersonId}/${customerId}/${orderId}/${productId}`);
+
+        } catch (error) {
+            console.error("Validation error:", error);
+            alert("An error occurred during validation. Please try again.");
+        }
     };
 
     return (
@@ -52,7 +80,6 @@ export default function DisplaySalesPersonPage() {
                 <div className="form-container">
                     <h2>Display Sales Person - Mandatory Details</h2>
 
-                    {/* Display error message if validation fails */}
                     {error && <div className="error-message">{error}</div>}
 
                     <form className="header-box" onSubmit={handleSubmit}>
@@ -60,7 +87,7 @@ export default function DisplaySalesPersonPage() {
                             <div className="data">
                                 <label htmlFor="salesPersonId">Sales Person ID</label>
                                 <input
-                                    type="number"
+                                    type="text"
                                     id="salesPersonId"
                                     name="salesPersonId"
                                     value={salesPersonId}
@@ -72,7 +99,7 @@ export default function DisplaySalesPersonPage() {
                             <div className="data">
                                 <label htmlFor="customerId">Customer ID</label>
                                 <input
-                                    type="number"
+                                    type="text"
                                     id="customerId"
                                     name="customerId"
                                     value={customerId}
@@ -81,29 +108,29 @@ export default function DisplaySalesPersonPage() {
                                 />
                             </div>
 
-							<div className="data">
-								<label htmlFor="orderId">Order ID</label>
-								<input
-									type="text"
-									id="orderId"
-									name="orderId"
-									value={orderId}
-									onChange={(e) => setOrderId(e.target.value)}
-									required
-								/>
-							</div>
+                            <div className="data">
+                                <label htmlFor="orderId">Order ID</label>
+                                <input
+                                    type="text"
+                                    id="orderId"
+                                    name="orderId"
+                                    value={orderId}
+                                    onChange={(e) => setOrderId(e.target.value)}
+                                    required
+                                />
+                            </div>
 
-							<div className="data">
-								<label htmlFor="productId">Product ID</label>
-								<input
-									type="text"
-									id="productId"
-									name="productId"
-									value={productId}
-									onChange={(e) => setProductId(e.target.value)}
-									required
-								/>
-							</div>
+                            <div className="data">
+                                <label htmlFor="productId">Product ID</label>
+                                <input
+                                    type="text"
+                                    id="productId"
+                                    name="productId"
+                                    value={productId}
+                                    onChange={(e) => setProductId(e.target.value)}
+                                    required
+                                />
+                            </div>
                         </div>
 
                         <button type="submit" className="submit-btn">

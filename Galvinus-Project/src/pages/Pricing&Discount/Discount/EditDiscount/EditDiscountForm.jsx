@@ -25,7 +25,7 @@ export default function EditDiscountForm() {
     const fetchDiscount = async () => {
       try {
         const response = await fetch(
-          `http://localhost:3000/api/discounts/${discountId}`
+          `http://localhost:3001/api/discounts/${discountId}`
         );
         if (!response.ok) {
           throw new Error("Discount not found");
@@ -76,7 +76,7 @@ export default function EditDiscountForm() {
 		};
 
       const response = await fetch(
-        `http://localhost:3000/api/discounts/${discountId}`,
+        `http://localhost:3001/api/discounts/${discountId}`,
         {
           method: "PUT",
           headers: {

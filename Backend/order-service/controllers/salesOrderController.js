@@ -40,16 +40,11 @@ class SalesOrderController {
             const { orderId, customerId } = req.params;
 
             // Convert orderId to an integer
-            const parsedOrderId = parseInt(orderId, 10);
-            if (isNaN(parsedOrderId)) {
-                return res.status(400).json({ error: 'Invalid orderId. Must be a number.' });
-            }
+            const parsedOrderId = orderId;
 
             // Convert customerId to an integer
-            const parsedCustomerId = parseInt(customerId, 10);
-            if (isNaN(parsedCustomerId)) {
-                return res.status(400).json({ error: 'Invalid customerId. Must be a number.' });
-            }
+            const parsedCustomerId = customerId;
+           
 
             // Call the service to fetch the sales order
             const salesOrder = await this.salesOrderService.getSalesOrderByOrderIdAndCustomerId(parsedOrderId, parsedCustomerId);
@@ -70,11 +65,8 @@ class SalesOrderController {
             console.log("Received data:", salesOrderData); // Debugging
     
             // Validate customerId
-            const customerId = parseInt(salesOrderData.customerId, 10);
-            if (isNaN(customerId)) {
-                return res.status(400).json({ message: "Customer ID must be a valid number" });
-            }
-    
+            const customerId = salesOrderData.customerId;
+          
             // Check if the customer exists
             const customerExists = await this.salesOrderService.checkCustomerExists(customerId);
             if (!customerExists) {
@@ -86,7 +78,7 @@ class SalesOrderController {
                 ...salesOrderData,
                 ...(salesOrderData.orderDate && { orderDate: new Date(salesOrderData.orderDate).toISOString() }),
                 ...(salesOrderData.requiredDate && { requiredDate: new Date(salesOrderData.requiredDate).toISOString() }),
-                customerId: customerId, // Use the parsed customerId
+                // customerId: customerId, 
                 totalAmount: parseFloat(salesOrderData.totalAmount), // Convert to float
             };
     
@@ -123,18 +115,22 @@ class SalesOrderController {
                 ...updateData,
                 ...(updateData.orderDate && { orderDate: new Date(updateData.orderDate).toISOString() }),
                 ...(updateData.requiredDate && { requiredDate: new Date(updateData.requiredDate).toISOString() }),
-                ...(updateData.customerId && { customerId: parseInt(updateData.customerId, 10) }), // Ensure customerId is an integer
+                ...(updateData.customerId && { customerId: updateData.customerId}), // Ensure customerId is an integer
                 ...(updateData.totalAmount && { totalAmount: parseFloat(updateData.totalAmount) }),
             };
 
             // Call the service to update the sales order
             const updatedSalesOrder = await this.salesOrderService.updateSalesOrder(orderId, formattedData);
 
+            // Publish an event to Kafka for order modification
+            await this.publishOrderModifiedEvent(updatedSalesOrder);
+
             res.status(200).json(updatedSalesOrder);
         } catch (error) {
             res.status(400).json({ error: error.message });
         }
     }
+
 
     async publishOrderCreatedEvent(newSalesOrder) {
         // Connect to Kafka producer
@@ -149,6 +145,20 @@ class SalesOrderController {
         };
         await this.kafkaProducer.publish('order-events', event);
     }
+    async publishOrderModifiedEvent(updatedSalesOrder) {
+        // Connect to Kafka producer
+        await this.kafkaProducer.connect();
+
+        // Publish an event to Kafka
+        const event = {
+            service: 'order-service',
+            event: 'order.modified',
+            message: `Order ${updatedSalesOrder.orderId} modified`,
+            data: updatedSalesOrder, // Include the updated order data in the event
+        };
+        await this.kafkaProducer.publish('order-events', event);
+    }
+
 }
 
 // Export the class itself

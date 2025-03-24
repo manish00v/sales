@@ -22,7 +22,9 @@ export default function DisplayProductForm() {
   // Fetch product details when the component mounts
   useEffect(() => {
     const fetchProduct = async () => {
-		
+		    
+          
+    
       try {
         // Validate productId and category
         if (!productId || !category) {
@@ -30,7 +32,7 @@ export default function DisplayProductForm() {
         }
 
         console.log("Fetching product with ID:", productId, "and category:", category); // Debugging
-        const response = await fetch(`http://localhost:3000/api/products/${productId}/${category}`);
+        const response = await fetch(`http://localhost:3001/api/products/${productId}/${category}`);
         if (!response.ok) {
           throw new Error("Product Id and category are not found in the Database");
         }
@@ -65,12 +67,12 @@ export default function DisplayProductForm() {
     };
 
     fetchProduct();
-  }, [productId, category]);
+  }, [productId, category,  setBtn, setGoBackUrl]);
 
   if (loading) {
     return <div>Loading...</div>;
   }
-  setBtn, setGoBackUrl
+  
   return (
     <>
       <FormPageHeader /> {/* Render the FormPageHeader component */}

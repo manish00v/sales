@@ -5,7 +5,7 @@ import FormPageHeader from "../../../../components/Layout/FormPageHeader/FormPag
 import "../../../../components/Layout/Styles/BoxFormStyles.css";
 
 export default function EditSalesOrderForm() {
-  const { setBtn, setUrl, setGoBackUrl } = useContext(FormPageHeaderContext);
+  const { setUrl, setGoBackUrl } = useContext(FormPageHeaderContext);
   const { orderId } = useParams(); // Use orderId from URL params
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -55,10 +55,9 @@ export default function EditSalesOrderForm() {
   }, [orderId]);
 
   useEffect(() => {
-    setBtn("Save");
     setUrl(`/salesorder/${orderId}`);
     setGoBackUrl("/salesorder");
-  }, [setBtn, setUrl, setGoBackUrl, orderId]);
+  }, [setUrl, setGoBackUrl, orderId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -72,9 +71,16 @@ export default function EditSalesOrderForm() {
     e.preventDefault();
 
     try {
+        // Check if orderId already exists
+        const orderCheckResponse = await fetch(`http://localhost:3000/api/sales-orders/${formData.orderId}`);
+        if (!orderCheckResponse.ok) {
+            alert("Error: Order ID is already in the database.");
+            return;
+        }
+
 		// Format data for submission
 		const formattedData = {
-		  customerId: parseInt(formData.customerId), // Convert to number if necessary
+		  customerId: formData.customerId, // Convert to number if necessary
 		  productId: formData.productId,
 		  orderDate: new Date(formData.orderDate).toISOString(), // Ensure proper date format
 		  requiredDate: new Date(formData.requiredDate).toISOString(), // Ensure proper date format
@@ -134,7 +140,7 @@ export default function EditSalesOrderForm() {
                 <div className="data">
                   <label htmlFor="orderId">Order ID</label>
                   <input
-                    type="number"
+                    type="text"
                     id="orderId"
                     name="orderId"
                     value={formData.orderId}
@@ -146,7 +152,7 @@ export default function EditSalesOrderForm() {
                 <div className="data">
                   <label htmlFor="customerId">Customer ID</label>
                   <input
-                    type="number"
+                    type="text"
                     id="customerId"
                     name="customerId"
                     value={formData.customerId}

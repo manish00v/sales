@@ -32,7 +32,7 @@ export default function DisplayDiscountRulesForm() {
                 }
 
                 console.log("Fetching discount rules with discountId:", discountId, "and productId:", productId); // Debugging
-                const response = await fetch(`http://localhost:3000/api/discount-rules/${discountId}/${productId}`);
+                const response = await fetch(`http://localhost:3001/api/discount-rules/${discountId}/${productId}`);
                 if (!response.ok) {
                     throw new Error("Discount rules not found");
                 }
@@ -42,11 +42,6 @@ export default function DisplayDiscountRulesForm() {
                 // Handle array response
                 const discountRules = Array.isArray(data) ? data[0] : data;
                 console.log("Extracted discount rules:", discountRules); // Debugging
-
-                // Check if the fetched discount rules match the provided discountId and productId
-                if (discountRules.discountId !== parseInt(discountId) || discountRules.productId !== parseInt(productId)) {
-                    throw new Error("Discount ID and Product ID do not match");
-                }
 
                 // Populate the form data if the discount rules are found
                 setFormData({

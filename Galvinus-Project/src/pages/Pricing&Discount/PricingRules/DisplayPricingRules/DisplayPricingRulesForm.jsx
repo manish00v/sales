@@ -5,7 +5,7 @@ import FormPageHeader from "../../../../components/Layout/FormPageHeader/FormPag
 import "../../../../components/Layout/Styles/BoxFormStyles.css";
 
 export default function DisplayPricingRulesForm() {
-    const { setBtn, setGoBackUrl } = useContext(FormPageHeaderContext);
+    const { setGoBackUrl } = useContext(FormPageHeaderContext);
     const { ruleId, productId } = useParams(); // Extract ruleId and productId from the URL
     const [formData, setFormData] = useState({
         ruleId: "",
@@ -21,7 +21,6 @@ export default function DisplayPricingRulesForm() {
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        setBtn("NoBtn");
         setGoBackUrl("/pricingrules");
 
         const fetchPricingRules = async () => {
@@ -32,7 +31,7 @@ export default function DisplayPricingRulesForm() {
                 }
 
                 console.log("Fetching pricing rules with ruleId:", ruleId, "and productId:", productId); // Debugging
-                const response = await fetch(`http://localhost:3000/api/pricing-rules/${ruleId}/${productId}`);
+                const response = await fetch(`http://localhost:3001/api/pricing-rules/${ruleId}/${productId}`);
                 if (!response.ok) {
                     throw new Error("Pricing rules not found");
                 }
@@ -42,11 +41,6 @@ export default function DisplayPricingRulesForm() {
                 // Handle array response
                 const pricingRules = Array.isArray(data) ? data[0] : data;
                 console.log("Extracted pricing rules:", pricingRules); // Debugging
-
-                // Check if the fetched pricing rules match the provided ruleId and productId
-                if (pricingRules.ruleId !== parseInt(ruleId) || pricingRules.productId !== parseInt(productId)) {
-                    throw new Error("Rule ID and Product ID do not match");
-                }
 
                 // Populate the form data if the pricing rules are found
                 setFormData({
@@ -68,7 +62,7 @@ export default function DisplayPricingRulesForm() {
         };
 
         fetchPricingRules();
-    }, [ruleId, productId, setBtn, setGoBackUrl]);
+    }, [ruleId, productId, setGoBackUrl]);
 
     if (loading) {
         return <div>Loading...</div>;

@@ -5,7 +5,7 @@ import FormPageHeader from "../../../../components/Layout/FormPageHeader/FormPag
 import "../../../../components/Layout/Styles/BoxFormStyles.css";
 
 export default function EditLineItemsForm() {
-  const { setBtn, setUrl, setGoBackUrl } = useContext(FormPageHeaderContext);
+  const { setUrl, setGoBackUrl } = useContext(FormPageHeaderContext);
   const { orderLineItemId } = useParams(); // Use orderLineItemsId from URL params
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -13,6 +13,8 @@ export default function EditLineItemsForm() {
     productId: "",
     quantity: "",
     unitPrice: "",
+    discount: "",
+    tax: "",
     totalLinePrice: "",
   });
   const [loading, setLoading] = useState(true);
@@ -34,6 +36,8 @@ export default function EditLineItemsForm() {
           productId: data.productId,
           quantity: data.quantity,
           unitPrice: data.unitPrice,
+          discount: data.discount,
+          tax: data.tax,
           totalLinePrice: data.totalLinePrice,
         });
       } catch (err) {
@@ -47,10 +51,9 @@ export default function EditLineItemsForm() {
   }, [orderLineItemId]);
 
   useEffect(() => {
-    setBtn("Save");
     setUrl(`/lineitems/${orderLineItemId}`);
     setGoBackUrl("/lineitems");
-  }, [setBtn, setUrl, setGoBackUrl, orderLineItemId]);
+  }, [setUrl, setGoBackUrl, orderLineItemId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -70,6 +73,8 @@ export default function EditLineItemsForm() {
 		quantity: parseInt(formData.quantity), // Convert to number
 		unitPrice: parseFloat(formData.unitPrice), // Convert to number
 		totalLinePrice: parseFloat(formData.totalLinePrice), // Convert to number
+    discount: parseFloat(formData.discount),
+    tax: parseFloat(formData.tax),
 	  };
   
 	  const response = await fetch(
@@ -122,12 +127,12 @@ export default function EditLineItemsForm() {
                 <div className="data">
                   <label htmlFor="orderLineItemId">Order Line Items ID</label>
                   <input
-                    type="number"
+                    type="text"
                     id="orderLineItemId"
                     name="orderLineItemId"
                     value={formData.orderLineItemId}
                     onChange={handleChange}
-                    required
+                    readOnly
                    
                   />
                 </div>
@@ -174,6 +179,30 @@ export default function EditLineItemsForm() {
                     required
                   />
                 </div>
+
+                <div className="data">
+                                <label htmlFor="discount">Discount</label>
+                                <input
+                                    type="number"
+                                    id="discount"
+                                    name="discount"
+                                    value={formData.discount}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+
+                            <div className="data">
+                                <label htmlFor="tax">Tax</label>
+                                <input
+                                    type="number"
+                                    id="tax"
+                                    name="tax"
+                                    value={formData.tax}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
 
                 <div className="data">
                   <label htmlFor="totalLinePrice">Total Price</label>

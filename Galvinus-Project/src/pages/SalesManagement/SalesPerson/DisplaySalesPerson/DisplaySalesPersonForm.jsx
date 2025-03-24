@@ -5,7 +5,7 @@ import FormPageHeader from "../../../../components/Layout/FormPageHeader/FormPag
 import "../../../../components/Layout/Styles/BoxFormStyles.css";
 
 export default function DisplaySalesPersonForm() {
-    const { setBtn, setGoBackUrl } = useContext(FormPageHeaderContext);
+    const { setGoBackUrl } = useContext(FormPageHeaderContext);
     const { salesPersonId, customerId } = useParams(); // Extract salesPersonId and customerId from the URL
     const [formData, setFormData] = useState({
         salesPersonId: "",
@@ -23,7 +23,6 @@ export default function DisplaySalesPersonForm() {
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        setBtn("NoBtn");
         setGoBackUrl("/salesperson");
 
         const fetchSalesPerson = async () => {
@@ -44,11 +43,6 @@ export default function DisplaySalesPersonForm() {
                 // Handle array response
                 const salesPerson = Array.isArray(data) ? data[0] : data;
                 console.log("Extracted sales person:", salesPerson); // Debugging
-
-                // Check if the fetched sales person matches the provided salesPersonId and customerId
-                if (salesPerson.salesPersonId !== parseInt(salesPersonId) || salesPerson.customerId !== parseInt(customerId)) {
-                    throw new Error("Sales Person ID and Customer ID do not match");
-                }
 
                 // Populate the form data if the sales person is found
                 setFormData({
@@ -72,7 +66,7 @@ export default function DisplaySalesPersonForm() {
         };
 
         fetchSalesPerson();
-    }, [salesPersonId, customerId, setBtn, setGoBackUrl]);
+    }, [salesPersonId, customerId, setGoBackUrl]);
 
     if (loading) {
         return <div>Loading...</div>;

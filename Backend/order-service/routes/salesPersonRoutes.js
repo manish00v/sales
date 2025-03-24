@@ -24,7 +24,7 @@ router.get('/sales-persons', (req, res) => salesPersonController.getAllSalesPers
 router.get(
   '/sales-persons/:salesPersonId',
   validate([
-    param('salesPersonId').isNumeric().isLength({ max: 20 }),
+    param('salesPersonId').isString().isLength({ max: 20 }),
   ]),
   (req, res) => salesPersonController.getSalesPersonBySalesPersonId(req, res)
 );
@@ -33,7 +33,7 @@ router.get(
 router.get(
   '/sales-persons/customer/:customerId',
   validate([
-    param('customerId').isNumeric().isLength({ max: 20 }),
+    param('customerId').isString().isLength({ max: 20 }),
   ]),
   (req, res) => salesPersonController.getSalesPersonByCustomerId(req, res)
 );
@@ -42,7 +42,7 @@ router.get(
 router.get(
   '/sales-persons/order/:orderId',
   validate([
-    param('orderId').isNumeric().isLength({ max: 20 }),
+    param('orderId').isString().isLength({ max: 20 }),
   ]),
   (req, res) => salesPersonController.getSalesPersonByOrderId(req, res)
 );
@@ -51,7 +51,7 @@ router.get(
 router.get(
   '/sales-persons/product/:productId',
   validate([
-    param('productId').isNumeric().isLength({ max: 20 }),
+    param('productId').isString().isLength({ max: 20 }),
   ]),
   (req, res) => salesPersonController.getSalesPersonByProductId(req, res)
 );
@@ -59,8 +59,8 @@ router.get(
 router.get(
     '/sales-persons/:salesPersonId/:customerId',
     validate([
-      param('salesPersonId').isNumeric().isLength({ max: 20 }),
-      param('customerId').isNumeric().isLength({ max: 20 }),
+      param('salesPersonId').isString().isLength({ max: 20 }),
+      param('customerId').isString().isLength({ max: 20 }),
     ]),
     (req, res) => salesPersonController.getSalesPersonBySalesPersonIdAndCustomerId(req, res)
   );
@@ -68,10 +68,10 @@ router.get(
 router.get(
     '/sales-persons/:salesPersonId/:customerId/:orderId/:productId',
     validate([
-      param('salesPersonId').isNumeric().isLength({ max: 20 }),
-      param('customerId').isNumeric().isLength({ max: 20 }),
-      param('orderId').isNumeric().isLength({ max: 20 }),
-      param('productId').isNumeric().isLength({ max: 20 }),
+      param('salesPersonId').isString().isLength({ max: 20 }),
+      param('customerId').isString().isLength({ max: 20 }),
+      param('orderId').isString().isLength({ max: 20 }),
+      param('productId').isString().isLength({ max: 20 }),
     ]),
     (req, res) => salesPersonController.getSalesPersonByCompositeKeys(req, res)
   );
@@ -81,9 +81,9 @@ router.get(
 router.post(
   '/sales-persons',
   validate([
-    body('customerId').isNumeric().isLength({ max: 20 }),
-    body('orderId').isNumeric().isLength({ max: 20 }),
-    body('productId').isNumeric().isLength({ max: 20 }),
+    body('customerId').isString().isLength({ max: 20 }),
+    body('orderId').isString().isLength({ max: 20 }),
+    body('productId').isString().isLength({ max: 20 }),
     body('salesPersonName').isString().isLength({ max: 255 }),
     body('emailId').isEmail().isLength({ max: 100 }),
     body('phoneNumber').isString().isLength({ min: 10, max: 15 }),
@@ -97,9 +97,9 @@ router.post(
 router.put(
     '/sales-persons/:salesPersonId/:customerId',
     validate([
-      param('salesPersonId').isNumeric().isLength({ max: 20 }),
-      param('customerId').isNumeric().isLength({ max: 20 }),
-      body('orderId').optional().isNumeric().isLength({max: 20}),
+      param('salesPersonId').isString().isLength({ max: 20 }),
+      param('customerId').isString().isLength({ max: 20 }),
+      body('orderId').optional().isString().isLength({max: 20}),
       body('salesPersonName').optional().isString().isLength({ max: 255 }),
       body('emailId').optional().isEmail().isLength({ max: 100 }),
       body('phoneNumber').optional().isString().isLength({ min: 10, max: 15 }),

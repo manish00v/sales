@@ -26,22 +26,32 @@ export default function CreatePricingRulesForm() {
 
         try {
             // Check if ruleId already exists
-            const ruleCheckResponse = await fetch(`http://localhost:3000/api/pricing-rules/${formData.ruleId}`);
+            const ruleCheckResponse = await fetch(`http://localhost:3001/api/pricing-rules/${formData.ruleId}`);
             if (ruleCheckResponse.ok) {
                 alert("Error: Rule ID is already in the database.");
                 return;
             }
 
             // Check if productId exists in the database
-            const productCheckResponse = await fetch(`http://localhost:3000/api/products/${formData.productId}`);
+            const productCheckResponse = await fetch(`http://localhost:3001/api/products/${formData.productId}`);
             if (!productCheckResponse.ok) {
                 alert("Error: Product ID does not exist. Please create the product first.");
                 return;
             }
 
-			const discountCheckResponse = await fetch(`http://localhost:3000/api/discount-rules/${formData.discountId}`);
+            // Check if discountId exists in the database
+            const discountCheckResponse = await fetch(`http://localhost:3001/api/discount-rules/${formData.discountId}`);
             if (!discountCheckResponse.ok) {
                 alert("Error: Discount ID does not exist. Please create the Discount first.");
+                return;
+            }
+
+            // Check if the discountId is associated with the productId
+            const discountDetailsResponse = await fetch(`http://localhost:3001/api/discount-rules/${formData.discountId}`);
+            const discountDetails = await discountDetailsResponse.json();
+
+            if (discountDetails.productId !== formData.productId) {
+                alert(`Discount ID ${formData.discountId} is not associated with Product ID ${formData.productId}.`);
                 return;
             }
 
@@ -49,13 +59,13 @@ export default function CreatePricingRulesForm() {
             const formattedData = {
                 ...formData,
                 basePrice: parseFloat(formData.basePrice),
-				discountId: parseInt(formData.discountId, 10), // Convert discountId to a number
+                discountId: formData.discountId, // Convert discountId to a number
                 effectiveDate: formData.effectiveDate,
                 expireDate: formData.expireDate,
             };
 
             // Submit the pricing rule
-            const response = await fetch("http://localhost:3000/api/pricing-rules", {
+            const response = await fetch("http://localhost:3001/api/pricing-rules", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -92,7 +102,7 @@ export default function CreatePricingRulesForm() {
                             <div className="data">
                                 <label htmlFor="ruleId">Rule ID</label>
                                 <input
-                                    type="number"
+                                    type="text"
                                     id="ruleId"
                                     name="ruleId"
                                     placeholder="(Primary Key)"
@@ -105,7 +115,7 @@ export default function CreatePricingRulesForm() {
                             <div className="data">
                                 <label htmlFor="productId">Product ID</label>
                                 <input
-                                    type="number"
+                                    type="text"
                                     id="productId"
                                     name="productId"
                                     value={formData.productId}
@@ -117,7 +127,7 @@ export default function CreatePricingRulesForm() {
                             <div className="data">
                                 <label htmlFor="discountId">Discount ID</label>
                                 <input
-                                    type="number"
+                                    type="text"
                                     id="discountId"
                                     name="discountId"
                                     value={formData.discountId}

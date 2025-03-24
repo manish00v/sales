@@ -14,7 +14,7 @@ datasource db {
 }
 
 model Product {
-  productId            Int      @id @default(autoincrement())
+  productId            String      @id @default(uuid())
   productName          String
   category             String
   description          String?
@@ -28,8 +28,8 @@ model Product {
 }
 
 model Discount {
-    discountId                    Int    @id   //Foregin key to Discount Rules
-    productId                     Int         // Foreign key to Product
+    discountId                    String      @id @default(uuid())  //Foregin key to Discount Rules
+    productId                     String         // Foreign key to Product
     discountCriteria              String
     productDiscount               Float
     customerDiscount              Float
@@ -45,8 +45,8 @@ model Discount {
 
 
 model DiscountRules {
-    discountId           Int      @id @default(autoincrement())
-    productId            Int      // Foreign key to Product
+    discountId           String      @id @default(uuid())
+    productId            String    // Foreign key to Product
     applicableTo         String   // e.g., "All Customers", "First-time Customers"
     criteria             String?  // e.g., "Minimum Purchase Amount"
     discountType         String   // e.g., "Percentage", "Fixed Amount"
@@ -62,11 +62,11 @@ model DiscountRules {
 
 
 model PricingRules {
-    ruleId          Int      @id @default(autoincrement())
-    productId       Int      // Foreign key to Product
-    discountId      Int    // Foreign key to Discount (optional)
+    ruleId          String      @id @default(uuid())
+    productId       String     // Foreign key to Product
+    discountId      String    // Foreign key to Discount (optional)
     customerGroup   String   // e.g., "VIP", "Regular"
-    region          String   // e.g., "North America", "Europe"
+    region          String  // e.g., "North America", "Europe"
     basePrice       Float
     effectiveDate   DateTime
     expireDate      DateTime

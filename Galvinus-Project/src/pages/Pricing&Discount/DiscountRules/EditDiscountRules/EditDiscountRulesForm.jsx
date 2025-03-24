@@ -26,7 +26,7 @@ export default function EditDiscountRulesForm() {
     const fetchDiscountRule = async () => {
       try {
         const response = await fetch(
-          `http://localhost:3000/api/discount-rules/${discountId}`
+          `http://localhost:3001/api/discount-rules/${discountId}`
         );
         if (!response.ok) {
           throw new Error("Discount rule not found");
@@ -53,7 +53,6 @@ export default function EditDiscountRulesForm() {
   }, [discountId]);
 
   useEffect(() => {
-    setBtn("Save");
     setUrl(`/discountrules/${discountId}`);
     setGoBackUrl("/discountrules");
   }, [setBtn, setUrl, setGoBackUrl, discountId]);
@@ -79,7 +78,7 @@ export default function EditDiscountRulesForm() {
       };
 
       const response = await fetch(
-        `http://localhost:3000/api/discount-rules/${discountId}`,
+        `http://localhost:3001/api/discount-rules/${discountId}`,
         {
           method: "PUT",
           headers: {
@@ -128,18 +127,18 @@ export default function EditDiscountRulesForm() {
                 <div className="data">
                   <label htmlFor="discountId">Discount ID</label>
                   <input
-                    type="number"
+                    type="text"
                     id="discountId"
                     name="discountId"
                     value={formData.discountId}
-                    disabled
+                    
                   />
                 </div>
 
                 <div className="data">
                   <label htmlFor="productId">Product ID</label>
                   <input
-                    type="number"
+                    type="text"
                     id="productId"
                     name="productId"
                     value={formData.productId}

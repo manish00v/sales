@@ -9,4 +9,5 @@ router.get('/products/:productId', ProductController.getProductById.bind(Product
 router.get('/products/:productId/:category', ProductController.getProductByIdAndCategory.bind(ProductController));
 router.post('/products', (req, res) => ProductController.createProduct(req, res));
 router.put('/products/:id', ProductController.updateProduct.bind(ProductController));
+
 export default router;

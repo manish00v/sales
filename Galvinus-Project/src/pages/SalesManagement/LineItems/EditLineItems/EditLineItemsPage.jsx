@@ -5,12 +5,12 @@ import FormPageHeader from "../../../../components/Layout/FormPageHeader/FormPag
 import "../../../../components/Layout/Styles/BoxFormStyles.css";
 
 const EditLineItemsPage = () => {
-  const { setBtn, setGoBackUrl } = useContext(FormPageHeaderContext);
+  const { setGoBackUrl } = useContext(FormPageHeaderContext);
   const [orderLineItemId, setOrderLineItemId] = useState("");
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Validate orderLineItemsId
@@ -19,19 +19,25 @@ const EditLineItemsPage = () => {
       return;
     }
 
-    if (isNaN(orderLineItemId)) {
-      setError("Order Line Items ID must be a number");
-      return;
-    }
+    try {
+      // Check if orderLineItemId exists in the orderLineItems table
+      const response = await fetch(`http://localhost:3000/api/line-items/${orderLineItemId}`);
+      if (!response.ok) {
+        alert(`Order Line Items ID ${orderLineItemId} does not exist. Please create it first.`);
+        return;
+      }
 
-    // If validation passes, navigate to the EditLineItemsForm page
-    navigate(`/editlineitemsform/${orderLineItemId}`);
+      // If validation passes, navigate to the EditLineItemsForm page
+      navigate(`/editlineitemsform/${orderLineItemId}`);
+    } catch (error) {
+      console.error("Error checking Order Line Items ID:", error);
+      alert("An error occurred while validating the Order Line Items ID. Please try again.");
+    }
   };
 
   useEffect(() => {
-    setBtn("Edit");
     setGoBackUrl("/lineitems");
-  }, [setBtn, setGoBackUrl]);
+  }, [setGoBackUrl]);
 
   return (
     <>
@@ -48,7 +54,7 @@ const EditLineItemsPage = () => {
               <div className="data">
                 <label htmlFor="orderLineItemId">Order Line Items ID</label>
                 <input
-                  type="number"
+                  type="text"
                   id="orderLineItemId"
                   name="orderLineItemId"
                   value={orderLineItemId}

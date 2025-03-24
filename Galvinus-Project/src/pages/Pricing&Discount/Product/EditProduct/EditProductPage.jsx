@@ -7,27 +7,33 @@ import "../../../../components/Layout/Styles/BoxFormStyles.css";
 const EditProductPage = () => {
   const { setBtn, setGoBackUrl } = useContext(FormPageHeaderContext); // Use useContext
   const [productId, setProductId] = useState("");
-  const [error, setError] = useState(null);
+  const [error, setError] = useState(null); // State to store error messages
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Validate productId
     if (!productId) {
-      setError("Product ID is required");
+      alert("Product ID is required");
       return;
     }
 
-    if (isNaN(productId)) {
-      setError("Product ID must be a number");
-      return;
-    }
+    try {
+      // Fetch product details from the API
+      const response = await fetch(`http://localhost:3001/api/products/${productId}`);
+      if (!response.ok) {
+        throw new Error("Product not found");
+      }
 
-    // If validation passes, navigate to the EditProductForm page
-    navigate(`/editproductform/${productId}`);
+      // If product exists, navigate to the EditProductForm page
+      navigate(`/editproductform/${productId}`);
+    } catch (err) {
+      console.error("Error fetching product:", err);
+      alert(`Product ID ${productId} does not exist. Please check the ID and try again.`); // Alert the user
+    }
   };
-  setBtn, setGoBackUrl
+
   return (
     <>
       <FormPageHeader /> {/* Render the FormPageHeader component */}

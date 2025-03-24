@@ -21,7 +21,7 @@ const validate = (validations) => {
 router.post(
     '/sales-orders',
     validate([
-      body('orderId').isNumeric().isLength({ max: 20 }),
+      body('orderId').isString().isLength({ max: 20 }),
       body('orderDate').isISO8601(),
       body('requiredDate').isISO8601(),
       body('orderStatus').isString().isLength({ max: 50 }),
@@ -35,7 +35,7 @@ router.post(
 // Get a sales order by ID
 router.get(
   '/sales-orders/:orderId',
-   validate([param('orderId').isNumeric().isLength({ max: 20 })]),
+   validate([param('orderId').isString().isLength({ max: 20 })]),
   (req, res) => salesOrderController.getSalesOrderById(req, res)
 );
 
@@ -43,8 +43,8 @@ router.get(
 router.get(
     '/sales-orders/:orderId/:customerId',
     validate([
-      param('orderId').isNumeric(), // Validate orderId as numeric
-      param('customerId').isNumeric(), // Validate customerId as numeric
+      param('orderId').isString(), // Validate orderId as numeric
+      param('customerId').isString(), // Validate customerId as numeric
     ]),
     (req, res) => salesOrderController.getSalesOrderByOrderIdAndCustomerId(req, res)
   );
@@ -53,10 +53,10 @@ router.get(
 router.put(
     '/sales-orders/:orderId',
     validate([
-      param('orderId').isNumeric().isLength({ max: 20 }), // Validate the `id` parameter
+      param('orderId').isString().isLength({ max: 20 }), // Validate the `id` parameter
       body('orderDate').optional().isISO8601(),
       body('requiredDate').optional().isISO8601(),
-      body('customerId').optional().isInt(), // Validate customerId as an integer
+      body('customerId').optional().isString(), // Validate customerId as an integer
       body('orderStatus').optional().isString().isLength({ max: 50 }),
       body('paymentStatus').optional().isString().isLength({ max: 50 }),
       body('deliveryBlock').optional().isString().isLength({max: 20}),

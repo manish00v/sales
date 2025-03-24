@@ -45,9 +45,9 @@ export default function DisplayLineItemsForm() {
                 console.log("Extracted line item:", lineItem); // Debugging
 
                 // Check if the fetched line item matches the provided orderLineItemId and productId
-                if (lineItem.orderLineItemId !== parseInt(orderLineItemId) || lineItem.productId !== parseInt(productId)) {
-                    throw new Error("Order Line Item ID and Product ID do not match");
-                }
+                // if (lineItem.orderLineItemId !== parseInt(orderLineItemId) || lineItem.productId !== parseInt(productId)) {
+                //     throw new Error("Order Line Item ID and Product ID do not match");
+                // }
 
                 // Populate the form data if the line item is found
                 setFormData({

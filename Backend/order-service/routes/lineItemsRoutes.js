@@ -21,9 +21,9 @@ const validate = (validations) => {
 router.post(
   '/line-items',
   validate([
-    body('orderId').isInt(),
-    body('productId').isInt(),
-    body('customerId').isInt(),
+    body('orderId').isString(),
+    body('productId').isString(),
+    body('customerId').isString(),
     body('quantity').isInt(),
     body('unitPrice').isFloat(),
     body('discount').isFloat(),
@@ -37,7 +37,7 @@ router.post(
 router.get(
   '/line-items/:orderLineItemId',
   validate([
-    param('orderLineItemId').isInt(),
+    param('orderLineItemId').isString(),
   ]),
   (req, res) => lineItemsController.getLineItemById(req, res)
 );
@@ -46,8 +46,8 @@ router.get(
 router.get(
   '/line-items/:orderLineItemId/:productId',
   validate([
-    param('orderLineItemId').isInt(),
-    param('productId').isInt(),
+    param('orderLineItemId').isString(),
+    param('productId').isString(),
   ]),
   (req, res) => lineItemsController.getLineItemByorderLineItemIdAndProductId(req, res)
 );
@@ -56,10 +56,10 @@ router.get(
 router.put(
   '/line-items/:orderLineItemId',
   validate([
-    param('orderLineItemId').isInt(),
-    body('orderId').optional().isInt(),
-    body('productId').optional().isInt(),
-    body('customerId').optional().isInt(),
+    param('orderLineItemId').isString(),
+    body('orderId').optional().isString(),
+    body('productId').optional().isString(),
+    body('customerId').optional().isString(),
     body('quantity').optional().isInt(),
     body('unitPrice').optional().isFloat(),
     body('discount').optional().isFloat(),

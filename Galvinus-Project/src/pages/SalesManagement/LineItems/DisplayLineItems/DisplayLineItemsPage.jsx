@@ -5,18 +5,17 @@ import FormPageHeader from "../../../../components/Layout/FormPageHeader/FormPag
 import "../../../../components/Layout/Styles/BoxFormStyles.css";
 
 export default function DisplayLineItemsPage() {
-    const { setBtn, setGoBackUrl } = useContext(FormPageHeaderContext);
+    const { setGoBackUrl } = useContext(FormPageHeaderContext);
     const [orderLineItemId, setOrderLineItemId] = useState("");
     const [productId, setProductId] = useState("");
-    const [error, setError] = useState(null); // State to store error messages
+    const [error, setError] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
-        setBtn("Display");
         setGoBackUrl("/lineitems");
-    }, [setBtn, setGoBackUrl]);
+    }, [setGoBackUrl]);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         // Validate orderLineItemId and productId
@@ -25,21 +24,35 @@ export default function DisplayLineItemsPage() {
             return;
         }
 
-        // Check if orderLineItemId and productId are valid integers
-        if (isNaN(orderLineItemId) || !Number.isInteger(Number(orderLineItemId))) {
-            setError("Order Line Item ID must be a valid integer");
-            return;
-        }
-        if (isNaN(productId) || !Number.isInteger(Number(productId))) {
-            setError("Product ID must be a valid integer");
-            return;
-        }
+        try {
+            // 1. Check if orderLineItemId exists in line-items table
+            const lineItemResponse = await fetch(`http://localhost:3000/api/line-items/${orderLineItemId}`);
+            if (!lineItemResponse.ok) {
+                alert(`Order Line Item ID ${orderLineItemId} does not exist. Please create it first.`);
+                return;
+            }
 
-        // Log values for debugging
-        console.log("Navigating with Order Line Item ID:", orderLineItemId, "and Product ID:", productId);
+            // 2. Check if productId exists in product table
+            const productResponse = await fetch(`http://localhost:3001/api/products/${productId}`);
+            if (!productResponse.ok) {
+                alert(`Product ID ${productId} does not exist. Please create it first.`);
+                return;
+            }
 
-        // Navigate to DisplayLineItemsForm
-        navigate(`/displaylineitemsform/${orderLineItemId}/${productId}`);
+            // 3. Check if orderLineItemId is associated with productId
+            const associationResponse = await fetch(`http://localhost:3000/api/line-items/${orderLineItemId}/${productId}`);
+            if (!associationResponse.ok) {
+                alert(`Order Line Item ID ${orderLineItemId} is not associated with Product ID ${productId}.`);
+                return;
+            }
+
+            // If all validations pass, navigate to DisplayLineItemsForm
+            navigate(`/displaylineitemsform/${orderLineItemId}/${productId}`);
+
+        } catch (error) {
+            console.error("Error during validation:", error);
+            alert("An error occurred during validation. Please try again.");
+        }
     };
 
     return (
@@ -57,7 +70,7 @@ export default function DisplayLineItemsPage() {
                             <div className="data">
                                 <label htmlFor="orderLineItemId">Order Line Item ID</label>
                                 <input
-                                    type="number"
+                                    type="text"
                                     id="orderLineItemId"
                                     name="orderLineItemId"
                                     value={orderLineItemId}
@@ -69,7 +82,7 @@ export default function DisplayLineItemsPage() {
                             <div className="data">
                                 <label htmlFor="productId">Product ID</label>
                                 <input
-                                    type="number"
+                                    type="text"
                                     id="productId"
                                     name="productId"
                                     value={productId}

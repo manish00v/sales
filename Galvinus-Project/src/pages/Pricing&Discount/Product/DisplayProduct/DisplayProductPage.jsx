@@ -1,4 +1,4 @@
-import { useState, useContext } from "react"; // Add useContext import
+import { useState, useContext, useEffect } from "react"; // Add useContext import
 import { useNavigate } from "react-router-dom";
 import { FormPageHeaderContext } from "../../../../contexts/FormPageHeaderContext"; // Import the context
 import FormPageHeader from "../../../../components/Layout/FormPageHeader/FormPageHeader";
@@ -10,8 +10,11 @@ export default function DisplayProductPage() {
   const [productCategory, setProductCategory] = useState("");
   const [error, setError] = useState(null); // State to store error messages
   const navigate = useNavigate();
-
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    setBtn("Create");
+    setGoBackUrl("/product");
+  });
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Validate productId and category
@@ -20,16 +23,28 @@ export default function DisplayProductPage() {
       return;
     }
 
-    // Check if productId is a valid number
-    if (isNaN(productId)) {
-      setError("Product ID must be a number");
-      return;
-    }
+  
+    try {
+      // Fetch product details from the API
+      const response = await fetch(`http://localhost:3001/api/products/${productId}`);
+      if (!response.ok) {
+        throw new Error("Product not found");
+      }
 
-    // If validation passes, navigate to the DisplayProductForm page
-    navigate(`/displayproductform/${productId}/${productCategory}`);
+      const productData = await response.json();
+
+      // Check if the category matches
+      if (productData.category !== productCategory) {
+        alert(`For product ID ${productId} Category do not match. Please check your Category inputs.`);        return; // Stop further execution
+      }
+
+      // If validation passes, navigate to the DisplayProductForm page
+      navigate(`/displayproductform/${productId}/${productCategory}`);
+    } catch (err) {
+      console.error("Error fetching product:", err);
+      alert(`Product ID ${productId} is not exist in database, Please input currect Product ID.`);        return; // Stop further execution
+    }
   };
-  setBtn, setGoBackUrl 
   return (
     <>
       <FormPageHeader /> {/* Render the FormPageHeader component */}

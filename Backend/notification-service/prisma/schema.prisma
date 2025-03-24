@@ -8,9 +8,18 @@ datasource db {
 }
 
 model Notification {
-  id        String   @id @default(uuid())
-  service   String
-  event     String
+  id        Int      @id @default(autoincrement())
+  type      String   
+  orderId   Int?
   message   String
   timestamp DateTime @default(now())
+}
+
+model Settings {
+  id             Int      @id @default(autoincrement())
+  companyName    String
+  companyAddress String
+  timezone       String   @default("UTC")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }

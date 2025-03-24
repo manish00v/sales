@@ -5,12 +5,12 @@ import FormPageHeader from "../../../../components/Layout/FormPageHeader/FormPag
 import "../../../../components/Layout/Styles/BoxFormStyles.css";
 
 const EditPricingRulesPage = () => {
-  const { setBtn, setGoBackUrl } = useContext(FormPageHeaderContext);
+  const { setGoBackUrl } = useContext(FormPageHeaderContext);
   const [ruleId, setRuleId] = useState("");
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Validate ruleId
@@ -19,19 +19,26 @@ const EditPricingRulesPage = () => {
       return;
     }
 
-    if (isNaN(ruleId)) {
-      setError("Rule ID must be a number");
-      return;
-    }
+    try {
+      // Check if ruleId exists in the database
+      const response = await fetch(`http://localhost:3001/api/pricing-rules/${ruleId}`);
+      if (!response.ok) {
+        // If ruleId is not found, show an alert
+        alert(`Rule ID ${ruleId} does not exist in the database.`);
+        return;
+      }
 
-    // If validation passes, navigate to the EditPricingRulesForm page
-    navigate(`/editpricingrulesform/${ruleId}`);
+      // If ruleId exists, navigate to the EditPricingRulesForm page
+      navigate(`/editpricingrulesform/${ruleId}`);
+    } catch (error) {
+      console.error("Error checking rule ID:", error);
+      alert("An error occurred while checking the rule ID. Please try again.");
+    }
   };
 
   useEffect(() => {
-    setBtn("Edit");
     setGoBackUrl("/pricingrules");
-  }, [setBtn, setGoBackUrl]);
+  }, [setGoBackUrl]);
 
   return (
     <>

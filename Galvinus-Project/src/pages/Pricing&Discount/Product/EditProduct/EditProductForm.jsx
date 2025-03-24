@@ -21,10 +21,9 @@ export default function EditProductForm() {
 
   // Fetch product details when the component mounts
   useEffect(() => {
-
     const fetchProduct = async () => {
       try {
-        const response = await fetch(`http://localhost:3000/api/products/${productId}`);
+        const response = await fetch(`http://localhost:3001/api/products/${productId}`);
         if (!response.ok) {
           throw new Error("Product not found");
         }
@@ -39,14 +38,16 @@ export default function EditProductForm() {
         });
       } catch (err) {
         setError(err.message);
+        alert("Product ID not found. Please check the ID and try again."); // Alert the user
+        navigate("/product"); 
       } finally {
         setLoading(false);
       }
     };
 
     fetchProduct();
-  }, [productId]);
-  setBtn, setUrl, setGoBackUrl
+  }, [productId, navigate]); // Add navigate to dependency array
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
@@ -59,7 +60,7 @@ export default function EditProductForm() {
     e.preventDefault();
 
     try {
-      const response = await fetch(`http://localhost:3000/api/products/${productId}`, {
+      const response = await fetch(`http://localhost:3001/api/products/${productId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -110,7 +111,7 @@ export default function EditProductForm() {
                     id="productId"
                     name="productId"
                     value={productId}
-                    // disabled 
+                    disabled
                   />
                 </div>
               </div>

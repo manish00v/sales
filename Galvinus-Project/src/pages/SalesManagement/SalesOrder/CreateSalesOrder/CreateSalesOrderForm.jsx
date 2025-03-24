@@ -29,23 +29,23 @@ export default function CreateSalesOrderForm() {
             // Check if orderId already exists
             const orderCheckResponse = await fetch(`http://localhost:3000/api/sales-orders/${formData.orderId}`);
             if (orderCheckResponse.ok) {
-                alert("Error: Order ID is already in the database.");
+              alert(`Error: Order ID ${formData.orderId} is already in the database.`);
                 return;
             }
 
             // Check if customerId exists in the database
             const customerCheckResponse = await fetch(`http://localhost:3000/api/customers/${formData.customerId}`);
             if (!customerCheckResponse.ok) {
-                alert("Error: Customer ID does not exist. Please create the customer first.");
+                alert(`Error: Customer ID ${formData.customerId} does not exist. Please create the customer first.`);
                 return;
             }
 
             // Check if productId exists in the database
-            // const productCheckResponse = await fetch(`http://localhost:3000/api/products/${formData.productId}`);
-            // if (!productCheckResponse.ok) {
-            //     alert("Error: Product ID does not exist. Please create the product first.");
-            //     return;
-            // }
+            const productCheckResponse = await fetch(`http://localhost:3001/api/products/${formData.productId}`);
+            if (!productCheckResponse.ok) {
+                alert(`Error: Product ID ${formData.productId} does not exist. Please create the product first.`);
+                return;
+            }
 
             // Format data for submission
             const formattedData = {
@@ -53,7 +53,7 @@ export default function CreateSalesOrderForm() {
                 totalAmount: parseFloat(formData.totalAmount), // Convert total to a number
                 orderDate: new Date(formData.orderDate).toISOString(), // Format dates
                 requiredDate: new Date(formData.requiredDate).toISOString(),
-				orderId: parseInt(formData.orderId)
+				orderId: formData.orderId
             };
 
             // Submit the sales order
@@ -94,7 +94,7 @@ export default function CreateSalesOrderForm() {
                             <div className="data">
                                 <label htmlFor="orderId">Order ID</label>
                                 <input
-                                    type="number"
+                                    type="text"
                                     id="orderId"
                                     name="orderId"
                                     placeholder="(Primary Key)"
@@ -107,7 +107,7 @@ export default function CreateSalesOrderForm() {
                             <div className="data">
                                 <label htmlFor="customerId">Customer ID</label>
                                 <input
-                                    type="number"
+                                    type="text"
                                     id="customerId"
                                     name="customerId"
                                     value={formData.customerId}

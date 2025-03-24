@@ -18,7 +18,7 @@ class LineItemsController {
   async getLineItemById(req, res) {
     try {
       const { orderLineItemId } = req.params;
-      const lineItem = await this.lineItemsService.getLineItemById(parseInt(orderLineItemId, 10));
+      const lineItem = await this.lineItemsService.getLineItemById(orderLineItemId);
       if (!lineItem) {
         return res.status(404).json({ error: 'LineItem not found' });
       }
@@ -30,8 +30,8 @@ class LineItemsController {
 
   async getLineItemByorderLineItemIdAndProductId(req, res) {
     try {
-      const orderLineItemId = parseInt(req.params.orderLineItemId, 10); // Convert to Int
-      const productId = parseInt(req.params.productId, 10) // Keep as String
+      const orderLineItemId = req.params.orderLineItemId; 
+      const productId = req.params.productId // Keep as String
   
       const lineItem = await this.lineItemsService.getLineItemByorderLineItemIdAndProductId(orderLineItemId, productId);
       if (!lineItem) {
@@ -47,23 +47,13 @@ class LineItemsController {
     try {
       const { orderLineItemId } = req.params;
       const updateData = req.body;
-      const updatedLineItem = await this.lineItemsService.updateLineItem(parseInt(orderLineItemId, 10), updateData);
+      const updatedLineItem = await this.lineItemsService.updateLineItem(orderLineItemId, updateData);
       res.status(200).json(updatedLineItem);
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
   }
-
-  async deleteLineItem(req, res) {
-    try {
-      const { orderLineItemId } = req.params;
-      await this.lineItemsService.deleteLineItem(parseInt(orderLineItemId, 10));
-      res.status(204).send();
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  }
-
+  
   async getAllLineItems(req, res) {
     try {
       const lineItems = await this.lineItemsService.getAllLineItems();

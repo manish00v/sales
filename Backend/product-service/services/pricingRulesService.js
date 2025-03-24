@@ -9,9 +9,9 @@ class PricingRulesService {
         return await this.prisma.pricingRules.findMany();
     }
 
-    async getPricingRulesById(id) {
+    async getPricingRulesById(ruleId) {
         return await this.prisma.pricingRules.findUnique({
-            where: { ruleId: parseInt(id) },
+            where: { ruleId: ruleId },
         });
     }
 
@@ -19,8 +19,8 @@ class PricingRulesService {
         return await this.prisma.pricingRules.findMany({
             where: {
                 AND: [
-                    { productId: parseInt(productId) },
-                    { ruleId: parseInt(ruleId) },
+                    { productId: productId },
+                    { ruleId: ruleId },
                 ],
             },
         });
@@ -32,16 +32,16 @@ class PricingRulesService {
         });
     }
 
-    async updatePricingRules(id, pricingRulesData) {
+    async updatePricingRules(ruleId, pricingRulesData) {
         return await this.prisma.pricingRules.update({
-            where: { ruleId: parseInt(id) },
+            where: { ruleId:ruleId },
             data: pricingRulesData,
         });
     }
 
     async checkProductExists(productId) {
         const product = await this.prisma.product.findUnique({
-            where: { productId: parseInt(productId) },
+            where: { productId: productId },
         });
         return !!product; // Return true if product exists, false otherwise
     }

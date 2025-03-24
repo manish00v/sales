@@ -22,22 +22,55 @@ export default function CreateDiscountForm() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
+    
         try {
-            // Check if discountId already exists
-            const discountCheckResponse = await fetch(`http://localhost:3000/api/discount-rules/${formData.discountId}`);
-            if (!discountCheckResponse.ok) {
-                alert("Error: Discount ID does not exist. Please create the discount first.");
+            // Check if discountId already exists in the discounts table
+            const discountIdCheckResponse = await fetch(`http://localhost:3001/api/discounts/${formData.discountId}`);
+            if (!discountIdCheckResponse.ok) {
+                console.error("Error checking discount ID:", discountIdCheckResponse.statusText);
+                alert("Error checking discount ID. Please try again.");
                 return;
             }
-
-            // Check if productId exists in the database
-            const productCheckResponse = await fetch(`http://localhost:3000/api/products/${formData.productId}`);
+    
+            const discountIdCheckResult = await discountIdCheckResponse.json();
+            if (discountIdCheckResult.exists) {
+                alert(`Discount ID ${formData.discountId} already exists in the discount table.`);
+                return;
+            }
+    
+            // Check if discountId exists in the discount-rules table
+            const discountCheckResponse = await fetch(`http://localhost:3001/api/discount-rules/${formData.discountId}`);
+            if (!discountCheckResponse.ok) {
+                alert("Error: Discount ID does not exist in discount rules. Please create the discount rule first.");
+                return;
+            }
+    
+            // Check if productId exists in the products table
+            const productCheckResponse = await fetch(`http://localhost:3001/api/products/${formData.productId}`);
             if (!productCheckResponse.ok) {
                 alert("Error: Product ID does not exist. Please create the product first.");
                 return;
             }
-
+    
+            // Check if the combination of discountId and productId already exists in the discounts table
+            const discountProductCheckResponse = await fetch(
+                `http://localhost:3001/api/discounts/${formData.discountId}/${formData.productId}`
+            );
+    
+            if (!discountProductCheckResponse.ok) {
+                console.error("Error checking discount and product combination:", discountProductCheckResponse.statusText);
+                alert("Error checking discount and product combination. Please try again.");
+                return;
+            }
+    
+            const discountProductCheckResult = await discountProductCheckResponse.json();
+            console.log("Discount Product Check Result:", discountProductCheckResult);
+    
+            if (discountProductCheckResult.exists) {
+                alert(`Discount ID ${formData.discountId} and Product ID ${formData.productId} already exist in the discount table.`);
+                return;
+            }
+    
             // Format data for submission
             const formattedData = {
                 ...formData,
@@ -45,31 +78,31 @@ export default function CreateDiscountForm() {
                 customerDiscount: parseFloat(formData.customerDiscount),
                 discountValue: parseFloat(formData.discountValue),
             };
-
+    
             // Submit the discount
-            const response = await fetch("http://localhost:3000/api/discounts", {
+            const response = await fetch("http://localhost:3001/api/discounts", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify(formattedData),
             });
-
+    
             if (!response.ok) {
                 const errorResponse = await response.json();
                 console.error("Backend error:", errorResponse);
                 throw new Error(errorResponse.message || "Failed to create discount");
             }
-
+    
             const result = await response.json();
             console.log("Discount created successfully:", result);
             alert("Discount created successfully!");
         } catch (error) {
             console.error("Error creating discount:", error);
-            alert("Error creating discount. Please try again.");
+            alert(error.message || "Error creating discount. Please try again.");
         }
     };
-
+      
     return (
         <div className="container">
             <div className="form-container">

@@ -26,16 +26,16 @@ export default function CreateDiscountRulesForm() {
     
         try {
             // Check if discountId already exists
-            const discountCheckResponse = await fetch(`http://localhost:3000/api/discount-rules/${formData.discountId}`);
+            const discountCheckResponse = await fetch(`http://localhost:3001/api/discount-rules/${formData.discountId}`);
             if (discountCheckResponse.ok) {
-                alert("Error: Discount ID is already in the database.");
+                alert(`Discount ID ${formData.discountId} is already in the database.`);
                 return;
             }
     
             // Check if productId exists in the database
-            const productCheckResponse = await fetch(`http://localhost:3000/api/products/${formData.productId}`);
+            const productCheckResponse = await fetch(`http://localhost:3001/api/products/${formData.productId}`);
             if (!productCheckResponse.ok) {
-                alert("Error: Product ID does not exist. Please create the product first.");
+                alert(`Error: Product ID ${formData.productId} does not exist. Please create the product first.`);
                 return;
             }
     
@@ -48,7 +48,7 @@ export default function CreateDiscountRulesForm() {
             };
     
             // Submit the discount rule
-            const response = await fetch("http://localhost:3000/api/discount-rules", {
+            const response = await fetch("http://localhost:3001/api/discount-rules", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -86,7 +86,7 @@ export default function CreateDiscountRulesForm() {
                             <div className="data">
                                 <label htmlFor="discountId">Discount ID</label>
                                 <input
-                                    type="number"
+                                    type="text"
                                     id="discountId"
                                     name="discountId"
                                     placeholder="(Primary Key)"
@@ -99,7 +99,7 @@ export default function CreateDiscountRulesForm() {
                             <div className="data">
                                 <label htmlFor="productId">Product ID</label>
                                 <input
-                                    type="number"
+                                    type="text"
                                     id="productId"
                                     name="productId"
                                     value={formData.productId}

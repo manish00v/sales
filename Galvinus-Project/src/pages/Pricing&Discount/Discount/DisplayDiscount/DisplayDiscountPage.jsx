@@ -4,6 +4,7 @@ import { FormPageHeaderContext } from "../../../../contexts/FormPageHeaderContex
 import FormPageHeader from "../../../../components/Layout/FormPageHeader/FormPageHeader";
 import "../../../../components/Layout/Styles/BoxFormStyles.css";
 
+
 export default function DisplayDiscountPage() {
     const { setBtn, setGoBackUrl } = useContext(FormPageHeaderContext);
     const [discountId, setDiscountId] = useState("");
@@ -12,31 +13,48 @@ export default function DisplayDiscountPage() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        // setBtn("Display");
         setGoBackUrl("/discount");
     }, [setBtn, setGoBackUrl]);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         // Validate discountId and productId
         if (!discountId || !productId) {
-            setError("Discount ID and Product ID are required");
+            alert("Discount ID and Product ID are required");
             return;
         }
 
-        // Check if discountId and productId are valid numbers
-        if (isNaN(discountId)) {
-            setError("Discount ID must be a number");
-            return;
-        }
-        if (isNaN(productId)) {
-            setError("Product ID must be a number");
-            return;
-        }
+        try {
+            // Check if discountId exists in the database
+            const discountCheckResponse = await fetch(`http://localhost:3001/api/discount-rules/${discountId}`);
+            if (!discountCheckResponse.ok) {
+                alert(`Discount ID ${discountId} does not exist in the database.`);
+                return;
+            }
 
-        // If validation passes, navigate to the DisplayDiscountForm page
-        navigate(`/displaydiscountform/${discountId}/${productId}`);
+            // Check if productId exists in the database
+            const productCheckResponse = await fetch(`http://localhost:3001/api/products/${productId}`);
+            if (!productCheckResponse.ok) {
+                alert(`Product ID ${productId} does not exist in the database.`);
+                return;
+            }
+
+            // Check if the discountId is associated with the productId
+            const discountDetailsResponse = await fetch(`http://localhost:3001/api/discount-rules/${discountId}`);
+            const discountDetails = await discountDetailsResponse.json();
+
+            if (discountDetails.productId !== productId) {
+                alert(`Discount ID ${discountId} is not associated with Product ID ${productId}.`);
+                return;
+            }
+
+            // If all validations pass, navigate to the DisplayDiscountForm page
+            navigate(`/displaydiscountform/${discountId}/${productId}`);
+        } catch (error) {
+            console.error("Error validating IDs:", error);
+            alert("An error occurred while validating the IDs. Please try again.");
+        }
     };
 
     return (

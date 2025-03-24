@@ -11,7 +11,7 @@ class ProductService {
 
     async getProductById(productId) {
         return await this.prisma.product.findUnique({ // Use this.prisma
-            where: { productId: parseInt(productId) },
+            where: { productId: productId},
         });
     }
 
@@ -19,7 +19,7 @@ class ProductService {
         return await this.prisma.product.findMany({
             where: {
                 AND: [
-                    { productId: parseInt(productId) },
+                    { productId: productId },
                     { category: category },
                 ],
             },
@@ -32,9 +32,9 @@ class ProductService {
         });
     }
 
-    async updateProduct(id, productData) {
+    async updateProduct(productId, productData) {
         return await this.prisma.product.update({
-            where: { productId: parseInt(id) },
+            where: { productId: productId},
             data: productData,
         });
     }

@@ -1,5 +1,5 @@
 
-import React, { useContext, useEffect } from "react";
+import { useContext, useEffect } from "react";
 import Tips from "../../../components/Tips/Tips";
 import { TipsPageHeaderContext } from "../../../contexts/TipsPageHeaderContext";
 import TipsPageHeader from "../../../components/Layout/TipsPageHeader/TipsPageHeader";
@@ -14,7 +14,7 @@ const DiscountRulesPage = () => {
 		setCreateUrl("/creatediscountrules");
 		setEditUrl("/editdiscountrules");
 		setDisplayUrl("/displaydiscountrules");
-	}, []);
+	});
 
 	return (
 		<>

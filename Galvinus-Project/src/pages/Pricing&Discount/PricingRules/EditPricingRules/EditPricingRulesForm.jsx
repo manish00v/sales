@@ -26,7 +26,7 @@ export default function EditPricingRulesForm() {
     const fetchPricingRule = async () => {
       try {
         const response = await fetch(
-          `http://localhost:3000/api/pricing-rules/${ruleId}`
+          `http://localhost:3001/api/pricing-rules/${ruleId}`
         );
         if (!response.ok) {
           throw new Error("Pricing rule not found");
@@ -79,7 +79,7 @@ export default function EditPricingRulesForm() {
       };
 
       const response = await fetch(
-        `http://localhost:3000/api/pricing-rules/${ruleId}`,
+        `http://localhost:3001/api/pricing-rules/${ruleId}`,
         {
           method: "PUT",
           headers: {
@@ -128,7 +128,7 @@ export default function EditPricingRulesForm() {
                 <div className="data">
                   <label htmlFor="ruleId">Rule ID</label>
                   <input
-                    type="number"
+                    type="text"
                     id="ruleId"
                     name="ruleId"
                     value={formData.ruleId}
@@ -139,7 +139,7 @@ export default function EditPricingRulesForm() {
                 <div className="data">
                   <label htmlFor="productId">Product ID</label>
                   <input
-                    type="number"
+                    type="text"
                     id="productId"
                     name="productId"
                     value={formData.productId}
@@ -151,7 +151,7 @@ export default function EditPricingRulesForm() {
                 <div className="data">
                   <label htmlFor="discountId">Discount ID</label>
                   <input
-                    type="number"
+                    type="text"
                     id="discountId"
                     name="discountId"
                     value={formData.discountId}

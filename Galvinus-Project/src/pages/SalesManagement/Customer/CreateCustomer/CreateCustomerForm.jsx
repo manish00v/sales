@@ -4,6 +4,7 @@ import "../../../../components/Layout/Styles/BoxFormStyles.css";
 export default function CreateCustomerForm() {
     const [formData, setFormData] = useState({
         customerId: "",
+        productId: "",
         customerName: "",
         emailId: "",
         phoneNumber: "",
@@ -29,13 +30,18 @@ export default function CreateCustomerForm() {
             // Check if customer ID already exists
             const customerCheckResponse = await fetch(`http://localhost:3000/api/customers/${formData.customerId}`);
             if (customerCheckResponse.ok) {
-                alert("Error: Customer ID is already exist. Please try a new ID .");
+                alert(`Error: Customer ID ${formData.customerId} is already exist. Please try a new ID .`);
                 return;
             }
 
+            const productCheckResponse = await fetch(`http://localhost:3001/api/products/${formData.productId}`);
+            if (!productCheckResponse.ok) {
+                alert(`Error: Product ID ${formData.productId} does not exist. Please create the product first.`);
+                return;
+            }
             // Format data for submission
-            // const formattedData = {...formData, customerId: parseInt(formData.customerId)}
-            const formattedData = { ...formData, creditLimit: parseFloat(formData.creditLimit),  customerId: parseInt(formData.customerId) };
+
+            const formattedData = { ...formData, creditLimit: parseFloat(formData.creditLimit),  customerId:formData.customerId };
 
             // Submit the customer data
             const response = await fetch("http://localhost:3000/api/customers", {
@@ -74,10 +80,21 @@ export default function CreateCustomerForm() {
                             <div className="data">
                                 <label htmlFor="customerId">Customer ID</label>
                                 <input
-                                    type="number"
+                                    type="text"
                                     id="customerId"
                                     name="customerId"
                                     value={formData.customerId}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+                            <div className="data">
+                                <label htmlFor="productId">Product ID</label>
+                                <input
+                                    type="text"
+                                    id="productId"
+                                    name="productId"
+                                    value={formData.productId}
                                     onChange={handleChange}
                                     required
                                 />

@@ -46,34 +46,28 @@ class DiscountController {
     async createDiscount(req, res) {
         try {
             const discountData = req.body;
-            console.log("Received data:", discountData); // Debugging
+            console.log("Received data:", discountData);
 
-            // Validate and convert data types
-            if (!discountData.productId || !discountData.discountId) {
-                return res.status(400).json({ message: "Product ID and Discount ID are required" });
+            // Validate required fields
+            if (!discountData.discountId || !discountData.productId) {
+                return res.status(400).json({ message: "Discount ID and Product ID are required." });
             }
 
-            const formattedData = {
-                ...discountData,
-                productId: parseInt(discountData.productId, 10),
-                discountId: parseInt(discountData.discountId, 10),
-                discountValue: parseFloat(discountData.discountValue), // Convert to float
-              };
+            // Create the discount
+            const newDiscount = await this.discountService.createDiscount(discountData);
+            console.log("New discount created:", newDiscount);
 
-            // Check if the product exists
-            const productExists = await this.discountService.checkProductExists(formattedData.productId);
-
-            if (!productExists) {
-                return res.status(400).json({ message: "Product does not exist" });
-            }
-
-            // Call the service to create the discount
-            const newDiscount = await this.discountService.createDiscount(formattedData);
-            console.log("New discount created:", newDiscount); // Debugging
-
-            res.status(201).json({ message: "Discount created successfully", data: newDiscount });
+            res.status(201).json({
+                message: "Discount created successfully",
+                data: newDiscount,
+            });
         } catch (error) {
-            console.error("Error in createDiscount:", error); // Debugging
+            console.error("Error in createDiscount:", error);
+
+            if (error.message.includes("already exists")) {
+                return res.status(400).json({ message: error.message });
+            }
+
             res.status(500).json({ message: "Error creating discount", error: error.message });
         }
     }

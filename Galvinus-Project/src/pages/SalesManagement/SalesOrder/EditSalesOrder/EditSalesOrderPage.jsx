@@ -5,12 +5,12 @@ import FormPageHeader from "../../../../components/Layout/FormPageHeader/FormPag
 import "../../../../components/Layout/Styles/BoxFormStyles.css";
 
 const EditSalesOrderPage = () => {
-  const { setBtn, setGoBackUrl } = useContext(FormPageHeaderContext);
-  const [orderId, setorderId] = useState("");
+  const { setGoBackUrl } = useContext(FormPageHeaderContext);
+  const [orderId, setOrderId] = useState("");
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Validate salesOrderId
@@ -19,19 +19,26 @@ const EditSalesOrderPage = () => {
       return;
     }
 
-    if (isNaN(orderId)) {
-      setError("Sales Order ID must be a number");
-      return;
-    }
+    try {
+      // Check if orderId exists in the order table
+      const response = await fetch(`http://localhost:3000/api/sales-orders/${orderId}`);
+      if (!response.ok) {
+        // If orderId does not exist, show an alert
+        alert(`Order ID ${orderId} does not exist in the database. Please create the order ID first.`);
+        return;
+      }
 
-    // If validation passes, navigate to the EditSalesOrderForm page
-    navigate(`/editsalesorderform/${orderId}`);
+      // If orderId exists, navigate to the EditSalesOrderForm page
+      navigate(`/editsalesorderform/${orderId}`);
+    } catch (error) {
+      console.error("Error checking order ID:", error);
+      alert("An error occurred while validating the Order ID. Please try again.");
+    }
   };
 
   useEffect(() => {
-    setBtn("Edit");
-    setGoBackUrl("/salesorders");
-  }, [setBtn, setGoBackUrl]);
+    setGoBackUrl("/salesorder");
+  }, [setGoBackUrl]);
 
   return (
     <>
@@ -48,11 +55,11 @@ const EditSalesOrderPage = () => {
               <div className="data">
                 <label htmlFor="orderId">Sales Order ID</label>
                 <input
-                  type="number"
+                  type="text"
                   id="orderId"
                   name="orderId"
                   value={orderId}
-                  onChange={(e) => setorderId(e.target.value)}
+                  onChange={(e) => setOrderId(e.target.value)}
                   required
                 />
               </div>

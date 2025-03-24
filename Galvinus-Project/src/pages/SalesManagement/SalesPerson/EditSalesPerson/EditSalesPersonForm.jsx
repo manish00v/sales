@@ -5,7 +5,7 @@ import FormPageHeader from "../../../../components/Layout/FormPageHeader/FormPag
 import "../../../../components/Layout/Styles/BoxFormStyles.css";
 
 export default function EditSalesPersonForm() {
-  const { setBtn, setUrl, setGoBackUrl } = useContext(FormPageHeaderContext);
+  const { setUrl, setGoBackUrl } = useContext(FormPageHeaderContext);
   const { salesPersonId } = useParams(); // Use salesPersonId from URL params
   const {customerId} = useParams();
   const navigate = useNavigate();
@@ -56,10 +56,10 @@ export default function EditSalesPersonForm() {
   }, [salesPersonId, customerId]);
 
   useEffect(() => {
-    setBtn("Save");
+   
     setUrl(`/salesperson/${salesPersonId}`);
     setGoBackUrl("/salesperson");
-  }, [setBtn, setUrl, setGoBackUrl, salesPersonId]);
+  }, [setUrl, setGoBackUrl, salesPersonId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -74,7 +74,7 @@ export default function EditSalesPersonForm() {
 
     try {
       const formattedData = {
-        customerId: parseInt(formData.customerId),
+        customerId: formData.customerId,
         orderId: formData.orderId,
         productId: formData.productId,
         salesPersonName: formData.salesPersonName,
@@ -134,19 +134,19 @@ export default function EditSalesPersonForm() {
                 <div className="data">
                   <label htmlFor="salesPersonId">Sales Person ID</label>
                   <input
-                    type="number"
+                    type="text"
                     id="salesPersonId"
                     name="salesPersonId"
                     value={formData.salesPersonId}
                     onChange={handleChange}
-                    required
+                    readOnly
                   />
                 </div>
 
                 <div className="data">
                   <label htmlFor="customerId">Customer ID</label>
                   <input
-                    type="number"
+                    type="text"
                     id="customerId"
                     name="customerId"
                     value={formData.customerId}
@@ -158,7 +158,7 @@ export default function EditSalesPersonForm() {
                 <div className="data">
                   <label htmlFor="orderId">Order ID</label>
                   <input
-                    type="number"
+                    type="text"
                     id="orderId"
                     name="orderId"
                     value={formData.orderId}

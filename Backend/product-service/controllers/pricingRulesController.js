@@ -55,8 +55,8 @@ class PricingRulesController {
     
             const formattedData = {
                 ...pricingRuleData,
-                productId: parseInt(pricingRuleData.productId, 10),
-                ruleId: parseInt(pricingRuleData.ruleId, 10),
+                productId: String(pricingRuleData.productId),
+                ruleId: String(pricingRuleData.ruleId),
                 basePrice: parseFloat(pricingRuleData.basePrice), // Convert to float
                 effectiveDate: new Date(pricingRuleData.effectiveDate).toISOString(), // Convert to ISO-8601
                 expireDate: new Date(pricingRuleData.expireDate).toISOString(), // Convert to ISO-8601

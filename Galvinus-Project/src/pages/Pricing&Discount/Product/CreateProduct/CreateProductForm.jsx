@@ -3,7 +3,6 @@ import "../../../../components/Layout/Styles/BoxFormStyles.css";
 
 export default function CreateProductForm() {
   const [formData, setFormData] = useState({
-
     productName: "",
     category: "",
     productId: "",
@@ -11,7 +10,6 @@ export default function CreateProductForm() {
     description: "",
     unitOfMeasurement: "",
     weightVolume: ""
-   
   });
 
   const handleChange = (e) => {
@@ -25,13 +23,26 @@ export default function CreateProductForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Check if productId already exists
+    try {
+      const checkResponse = await fetch(`http://localhost:3001/api/products/${formData.productId}`);
+      if (checkResponse.ok) {
+        alert(`Product ID ${formData.productId} already exists. Please add a new ID.`);
+        return; // Stop the form submission if productId exists
+      }
+    } catch (error) {
+      console.error("Error checking product ID:", error);
+      alert("Error checking product ID. Please try again.");
+      return;
+    }
+
     const formDataToSend = {
       ...formData,
-      productId: formData.productId ? parseInt(formData.productId, 10) : null,
+      productId: formData.productId ? String(formData.productId) : null,
     };
-  
+
     try {
-      const response = await fetch("http://localhost:3000/api/products", {
+      const response = await fetch("http://localhost:3001/api/products", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -43,7 +54,6 @@ export default function CreateProductForm() {
         throw new Error("Failed to create product");
       }
 
-      
       const result = await response.json();
       console.log("Product created successfully:", result);
 
@@ -56,7 +66,6 @@ export default function CreateProductForm() {
         description: "",
         unitOfMeasurement: "",
         weightVolume: ""
-  
       });
 
       alert("Product created successfully!");
@@ -72,9 +81,7 @@ export default function CreateProductForm() {
         <h2>Create Product</h2>
 
         <form onSubmit={handleSubmit}>
-
           {/* Header Box  */}
-
           <div className="header-box">
             <h2>Header</h2>
 
@@ -82,7 +89,7 @@ export default function CreateProductForm() {
               <div className="data">
                 <label htmlFor="productId">Product ID</label>
                 <input
-                  type="number"
+                  type="string"
                   id="productId"
                   name="productId"
                   placeholder="(Primary Key)"
@@ -100,7 +107,6 @@ export default function CreateProductForm() {
 
             <div className="data-container">
               <div className="data">
-
                 <label htmlFor="productName">Product Name</label>
                 <input
                   type="text"
@@ -149,7 +155,7 @@ export default function CreateProductForm() {
               </div>
 
               <div className="data">
-              <label htmlFor="weightVolume">Weight/Volume</label>
+                <label htmlFor="weightVolume">Weight/Volume</label>
                 <input
                   type="text"
                   id="weightVolume"
@@ -164,7 +170,6 @@ export default function CreateProductForm() {
                 <label htmlFor="stockStatus">Stock Status</label>
                 <input
                   type="text"
-                  
                   id="stockStatus"
                   name="stockStatus"
                   value={formData.stockStatus}
@@ -172,12 +177,11 @@ export default function CreateProductForm() {
                   required
                 />
               </div>
-             
             </div>
           </div>
-            <button type="submit" className="submit-btn">
-              Create Product
-            </button>
+          <button type="submit" className="submit-btn">
+            Create Product
+          </button>
         </form>
       </div>
     </div>

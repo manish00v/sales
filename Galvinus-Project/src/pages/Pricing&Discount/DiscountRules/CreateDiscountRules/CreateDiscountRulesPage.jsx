@@ -1,5 +1,5 @@
 
-import React, { useContext, useEffect } from "react";
+import { useContext, useEffect } from "react";
 import { FormPageHeaderContext } from "../../../../contexts/FormPageHeaderContext";
 import FormPageHeader from "../../../../components/Layout/FormPageHeader/FormPageHeader";
 import CreateDiscountRulesForm from "./CreateDiscountRulesForm";
@@ -11,7 +11,7 @@ const CreateDiscountRulesPage = () => {
 		setBtn("Create");
 		setUrl("/discountrules");
 		setGoBackUrl("/discountrules");
-	}, []);
+	});
 
 	return (
 		<>

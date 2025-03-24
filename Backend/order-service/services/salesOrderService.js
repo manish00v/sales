@@ -13,7 +13,7 @@ class SalesOrderService {
         try {
             const salesOrder = await this.prisma.salesOrder.findUnique({ // Use `this.prisma`
                 where: {
-                    orderId: parseInt(orderId), // Convert to integer
+                    orderId: orderId, // Convert to integer
                 },
             });
             return salesOrder;
@@ -61,14 +61,14 @@ class SalesOrderService {
     
       // Proceed with the update
       return this.prisma.salesOrder.update({
-        where: { orderId: parseInt(orderId, 10) },
+        where: { orderId: orderId },
         data: updateData,
       });
     }
      
     async checkCustomerExists(customerId) {
         const customer = await this.prisma.customer.findUnique({
-            where: { customerId: parseInt(customerId) },
+            where: { customerId: customerId },
         });
         return !!customer; // Return true if customer exists, false otherwise
     }

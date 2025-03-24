@@ -3,33 +3,42 @@ import { useNavigate } from "react-router-dom";
 import { FormPageHeaderContext } from "../../../../contexts/FormPageHeaderContext";
 import FormPageHeader from "../../../../components/Layout/FormPageHeader/FormPageHeader";
 import "../../../../components/Layout/Styles/BoxFormStyles.css";
+import axios from "axios"; // Import axios for making API calls
 
 const EditDiscountPage = () => {
   const { setBtn, setGoBackUrl } = useContext(FormPageHeaderContext);
   const [discountId, setDiscountId] = useState("");
-  const [error, setError] = useState(null);
+  const [error] = useState(null);
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Validate discountId
     if (!discountId) {
-      setError("Discount ID is required");
+      alert("Discount ID is required"); // Alert if Discount ID is empty
       return;
     }
 
-    if (isNaN(discountId)) {
-      setError("Discount ID must be a number");
-      return;
-    }
+    try {
+      // Make an API call to check if the Discount ID exists
+      const response = await axios.get(`http://localhost:3001/api/discounts/${discountId}`); // Adjust the API endpoint as needed
 
-    // If validation passes, navigate to the EditDiscountForm page
-    navigate(`/editdiscountform/${discountId}`);
+      if (response.data) {
+        // If the Discount ID exists, navigate to the EditDiscountForm page
+        navigate(`/editdiscountform/${discountId}`);
+      } else {
+        // If the Discount ID does not exist, show an alert
+        alert("Discount ID not found. Please check the ID and try again.");
+      }
+    } catch (error) {
+      // Handle any errors that occur during the API call
+      console.error("Error verifying Discount ID:", error);
+      alert("Discount ID not found. Please check the ID and try again."); // Alert if Discount ID does not exist
+    }
   };
 
   useEffect(() => {
-    
     setGoBackUrl("/discount");
   }, [setBtn, setGoBackUrl]);
 

@@ -19,7 +19,7 @@ class SalesPersonService {
     try {
       const salesPerson = await this.prisma.salesPerson.findUnique({
         where: {
-          salesPersonId: parseInt(salesPersonId), // Convert to integer
+          salesPersonId: salesPersonId, // Convert to integer
         },
       });
       return salesPerson;
@@ -33,7 +33,7 @@ class SalesPersonService {
     try {
       const salesPerson = await this.prisma.salesPerson.findFirst({
         where: {
-          customerId: parseInt(customerId), // Convert to integer
+          customerId: customerId, // Convert to integer
         },
       });
       return salesPerson;
@@ -47,7 +47,7 @@ class SalesPersonService {
     try {
       const salesPerson = await this.prisma.salesPerson.findFirst({
         where: {
-          orderId: parseInt(orderId), // Convert to integer
+          orderId: orderId, // Convert to integer
         },
       });
       return salesPerson;
@@ -61,7 +61,7 @@ class SalesPersonService {
     try {
       const salesPerson = await this.prisma.salesPerson.findFirst({
         where: {
-          productId: parseInt(productId), // Convert to integer
+          productId: productId, // Convert to integer
         },
       });
       return salesPerson;
@@ -86,8 +86,8 @@ class SalesPersonService {
     try {
       const salesPerson = await this.prisma.salesPerson.findFirst({
         where: {
-          salesPersonId: parseInt(salesPersonId),
-          customerId: parseInt(customerId),
+          salesPersonId: salesPersonId,
+          customerId: customerId,
         },
       });
 
@@ -97,7 +97,7 @@ class SalesPersonService {
 
       return await this.prisma.salesPerson.update({
         where: {
-          salesPersonId: parseInt(salesPersonId),
+          salesPersonId: salesPersonId,
         },
         data: updateData,
       });
@@ -111,10 +111,10 @@ class SalesPersonService {
     try {
       const salesPerson = await this.prisma.salesPerson.findFirst({
         where: {
-          salesPersonId: parseInt(salesPersonId),
-          customerId: parseInt(customerId),
-          orderId: parseInt(orderId),
-          productId: parseInt(productId),
+          salesPersonId: salesPersonId,
+          customerId: customerId,
+          orderId: orderId,
+          productId: productId,
         },
       });
       return salesPerson;
@@ -128,8 +128,8 @@ async getSalesPersonBySalesPersonIdAndCustomerId(salesPersonId, customerId) {
     try {
       const salesPerson = await this.prisma.salesPerson.findFirst({
         where: {
-          salesPersonId: parseInt(salesPersonId),
-          customerId: parseInt(customerId),
+          salesPersonId: salesPersonId,
+          customerId: customerId,
         },
       });
       return salesPerson;

@@ -17,7 +17,7 @@ class CustomerController {
   async getCustomerByCustomerId(req, res) {
     try {
       const { customerId } = req.params; // customerId is a string
-      const customer = await this.customerService.getCustomerByCustomerId(parseInt(customerId, 10)); // Convert to integer
+      const customer = await this.customerService.getCustomerByCustomerId(customerId); // Convert to integer
   
       if (!customer) {
         return res.status(404).json({ message: "Customer not found" });
@@ -32,7 +32,7 @@ class CustomerController {
   
   async getCustomerByCustomerIdAndProductId(req, res) {
     try {
-      const customerId = parseInt(req.params.customerId, 10); // Convert to Int
+      const customerId = req.params.customerId; 
       const productId = req.params.productId; // Keep as String
       // const { customerId, productId } = req.params;
       const customer = await this.customerService.getCustomerByCustomerIdAndProductId(customerId, productId);
@@ -47,9 +47,9 @@ class CustomerController {
 
   async getCustomerByCustomerIdProductIdAndOrderId(req, res) {
     try {
-      const customerId = parseInt(req.params.customerId, 10);
+      const customerId = req.params.customerId;
       const productId = req.params.productId;
-      const orderId = parseInt(req.params.orderId, 10);
+      const orderId = req.params.orderId;
   
       const customer = await this.customerService.getCustomerByCustomerIdProductIdAndOrderId(
         customerId,
@@ -69,9 +69,8 @@ class CustomerController {
 
   async updateCustomerByCustomerIdAndProductId(req, res) {
     try {
-      const customerId = parseInt(req.params.customerId, 10); // Convert to Int
+      const customerId = req.params.customerId; 
       const productId = req.params.productId; // Keep as String
-      // const { customerId, productId } = req.params;
       const updateData = req.body;
       const updatedCustomer = await this.customerService.updateCustomerByCustomerIdAndProductId(customerId, productId, updateData);
       res.status(200).json(updatedCustomer);
