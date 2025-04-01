@@ -20,7 +20,14 @@ app.use(express.json());
 app.use('/settings', settingsRoutes);
 app.use('/api/search', searchRoutes);
 // Rest of your code...
-
+(async () => {
+  try {
+    await elasticClient.ping();
+    console.log('✅ Elasticsearch connected successfully');
+  } catch (error) {
+    console.error('❌ Elasticsearch connection failed:', error.message);
+  }
+})();
 // Initialize WebSocket server
 const webSocketServer = new WebSocketServer(8080);
 

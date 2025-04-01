@@ -17,24 +17,21 @@ class SearchController {
     try {
         const { index, query } = req.body;
 
-        // Check if the index exists
         const indexExists = await elasticsearchService.checkIndexExists(index);
         if (!indexExists) {
             return res.status(404).json({ 
-                message: 'Index not found', 
-                error: `Index ${index} does not exist.`, 
+                message: 'Index not found or Elasticsearch unavailable',
+                error: `Index "${index}" does not exist or connection failed.`,
             });
         }
 
-        // Perform the search
         const results = await elasticsearchService.searchDocuments(index, query);
-        res.status(200).json({ message: 'Search successful', data: results });
+        res.status(200).json({ data: results });
     } catch (error) {
-        console.error('Error in searchDocuments:', error);
-        res.status(500).json({ 
-            message: 'Error searching documents', 
-            error: error.message || 'Unknown error', // Include the error message
-            details: error.meta || null, // Include additional error details
+        res.status(500).json({
+            message: 'Search failed',
+            error: error.message,
+            details: error.meta?.body || null,
         });
     }
 }

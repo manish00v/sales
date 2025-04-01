@@ -18,19 +18,14 @@ class ElasticsearchService {
   // Search for documents
   async searchDocuments(index, query) {
     try {
-        const result = await elasticClient.search({
+        const { body } = await elasticClient.search({
             index,
-            body: {
-                query: {
-                    match: query, // Example: { name: 'product name' }
-                },
-            },
+            body: { query: { match: query } },
         });
-        return result.hits.hits; // Return search results
+        return body.hits.hits;
     } catch (error) {
-        console.error('Error searching documents:', error);
-        console.error('Full error object:', error.meta); // Log the full error object
-        throw error;
+        console.error('Elasticsearch search error:', error.meta?.body?.error || error.message);
+        throw new Error('Failed to search documents');
     }
 }
 
@@ -48,19 +43,20 @@ class ElasticsearchService {
   }
 
 
-  async checkIndexExists(index) {
+
+
+async checkIndexExists(index) {
     try {
-        const result = await elasticClient.indices.exists({
-            index,
-        });
-        return result;
+        const { body: exists } = await elasticClient.indices.exists({ index });
+        return exists;
     } catch (error) {
-        console.error('Error checking index existence:', error);
-        throw error;
+        console.error('Elasticsearch connection failed:', error.message);
+        return false; // Instead of throwing, return false
     }
 }
-
 }
+
+
 
 
 // Export an instance of the service
