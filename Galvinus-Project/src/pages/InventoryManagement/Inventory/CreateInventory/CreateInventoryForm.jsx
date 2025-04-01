@@ -16,6 +16,7 @@ export default function CreateInventoryForm() {
   const navigate = useNavigate();
 
   const [errors, setErrors] = useState({});
+  const [isChecking, setIsChecking] = useState(false);
 
   // Validate that a field (which should be a number) contains a valid number
   const validateNumberField = (name, value) => {
@@ -35,6 +36,46 @@ export default function CreateInventoryForm() {
       return `${name} is required.`;
     }
     return "";
+  };
+
+  // Check if product exists in database
+  const checkProductExists = async (productId) => {
+    try {
+      const response = await fetch(
+        `http://localhost:3001/api/products/${productId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return response.ok;
+    } catch (error) {
+      console.error("Error checking product:", error);
+      return false;
+    }
+  };
+
+  // Check if inventory ID already exists
+  const checkInventoryExists = async (inventoryId) => {
+    try {
+      const response = await fetch(
+        `http://localhost:7857/api/inventory/get-inventory?inventoryId=${inventoryId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return response.ok;
+    } catch (error) {
+      console.error("Error checking inventory:", error);
+      return false;
+    }
   };
 
   // Handle input changes. All inputs are of type text, even numeric ones.
@@ -84,13 +125,32 @@ export default function CreateInventoryForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsChecking(true);
+    
     // Final validation check before submission
     if (!isFormValid()) {
       console.log("Form invalid, please correct the errors");
+      setIsChecking(false);
       return;
     }
 
     try {
+      // Check if product exists
+      const productExists = await checkProductExists(formData.productId);
+      if (!productExists) {
+        alert("ProductID does not exist in the database");
+        setIsChecking(false);
+        return;
+      }
+
+      // Check if inventory ID already exists
+      const inventoryExists = await checkInventoryExists(formData.inventoryId);
+      if (inventoryExists) {
+        alert("InventoryID already exists in the database");
+        setIsChecking(false);
+        return;
+      }
+
       // Convert the numeric fields from strings to numbers before posting
       const payload = {
         ...formData,
@@ -98,14 +158,14 @@ export default function CreateInventoryForm() {
         reorderLevel: Number(formData.reorderLevel),
         safetyStock: Number(formData.safetyStock),
       };
-
+      
       const response = await fetch(
         "http://localhost:7857/api/inventory/create-inventory",
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // Uncomment if needed
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(payload),
         }
@@ -117,7 +177,7 @@ export default function CreateInventoryForm() {
           inventoryId: "",
           productId: "",
           location: "",
-          stockLevel: "", // numeric values as strings
+          stockLevel: "",
           reorderLevel: "",
           safetyStock: "",
           lotNumber: "",
@@ -126,6 +186,8 @@ export default function CreateInventoryForm() {
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setIsChecking(false);
     }
   };
 
@@ -190,7 +252,7 @@ export default function CreateInventoryForm() {
               <div className="data">
                 <label htmlFor="stockLevel">Stock Level</label>
                 <input
-                  type="text" // using text input for numeric value
+                  type="text"
                   id="stockLevel"
                   name="stockLevel"
                   value={formData.stockLevel}
@@ -204,7 +266,7 @@ export default function CreateInventoryForm() {
               <div className="data">
                 <label htmlFor="reorderLevel">Reorder Level</label>
                 <input
-                  type="text" // using text input for numeric value
+                  type="text"
                   id="reorderLevel"
                   name="reorderLevel"
                   value={formData.reorderLevel}
@@ -218,7 +280,7 @@ export default function CreateInventoryForm() {
               <div className="data">
                 <label htmlFor="safetyStock">Safety Stock</label>
                 <input
-                  type="text" // using text input for numeric value
+                  type="text"
                   id="safetyStock"
                   name="safetyStock"
                   value={formData.safetyStock}
@@ -232,7 +294,7 @@ export default function CreateInventoryForm() {
               <div className="data">
                 <label htmlFor="lotNumber">Lot Number</label>
                 <input
-                  type="text" // using text input so user can preserve any formatting but it must be numeric
+                  type="text"
                   id="lotNumber"
                   name="lotNumber"
                   value={formData.lotNumber}
@@ -250,9 +312,9 @@ export default function CreateInventoryForm() {
           <button
             type="submit"
             className="submit-btn"
-            disabled={!isFormValid()}
+            disabled={!isFormValid() || isChecking}
           >
-            Submit
+            {isChecking ? "Checking..." : "Submit"}
           </button>
         </form>
       </div>

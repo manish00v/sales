@@ -112,11 +112,11 @@ exports.getPaymentById = async (paymentId) => {
   try {
     return await prisma.payment.findUnique({
       where: { paymentId },
-      include: {
-        invoice: true,
-        order: true,
-        customer: true
-      }
+      // include: {
+      //   invoice: true,
+      //   // order: true,
+      //   customer: true
+      // }
     });
   } catch (error) {
     console.error("Failed to fetch payment:", error.message);

@@ -101,7 +101,7 @@ exports.getInventoryById = async (inventoryId) => {
   try {
     return await prisma.inventory.findUnique({
       where: { inventoryId },
-      include: { product: true }
+      // include: { product: true }
     });
   } catch (error) {
     console.error("Failed to fetch inventory:", error.message);

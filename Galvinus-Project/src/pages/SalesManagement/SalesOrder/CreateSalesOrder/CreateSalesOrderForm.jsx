@@ -1,16 +1,17 @@
 import { useState } from "react";
 import "../../../../components/Layout/Styles/BoxFormStyles.css";
 
-export default function CreateReturnLineItemsForm() {
+export default function CreateSalesOrderForm() {
     const [formData, setFormData] = useState({
-        lineItemId: "",
+        customerId: "",
+        orderId: "",
         productId: "",
-        productNameId: "",
-        quantityReturned: "",
-        conditionOfProduct: "",
-        originalPrice: "",
-        refundAmount: "",
-        replacementStatus: "pending",
+        orderDate: "",
+        requiredDate: "",
+        deliveryBlock: "",
+        orderStatus: "pending",
+        paymentStatus: "unpaid",
+        totalAmount: "",
     });
 
     const handleChange = (e) => {
@@ -25,10 +26,17 @@ export default function CreateReturnLineItemsForm() {
         e.preventDefault();
 
         try {
-            // Check if lineItemId already exists
-            const lineItemCheckResponse = await fetch(`http://localhost:3000/api/return-line-items/${formData.lineItemId}`);
-            if (lineItemCheckResponse.ok) {
-                alert(`Error: Line Item ID ${formData.lineItemId} is already in the database.`);
+            // Check if orderId already exists
+            const orderCheckResponse = await fetch(`http://localhost:3000/api/sales-orders/${formData.orderId}`);
+            if (orderCheckResponse.ok) {
+              alert(`Error: Order ID ${formData.orderId} is already in the database.`);
+                return;
+            }
+
+            // Check if customerId exists in the database
+            const customerCheckResponse = await fetch(`http://localhost:3000/api/customers/${formData.customerId}`);
+            if (!customerCheckResponse.ok) {
+                alert(`Error: Customer ID ${formData.customerId} does not exist. Please create the customer first.`);
                 return;
             }
 
@@ -42,13 +50,14 @@ export default function CreateReturnLineItemsForm() {
             // Format data for submission
             const formattedData = {
                 ...formData,
-                quantityReturned: parseInt(formData.quantityReturned),
-                originalPrice: parseFloat(formData.originalPrice),
-                refundAmount: parseFloat(formData.refundAmount)
+                totalAmount: parseFloat(formData.totalAmount), // Convert total to a number
+                orderDate: new Date(formData.orderDate).toISOString(), // Format dates
+                requiredDate: new Date(formData.requiredDate).toISOString(),
+				orderId: formData.orderId
             };
 
-            // Submit the return line item
-            const response = await fetch("http://localhost:3000/api/return-line-items", {
+            // Submit the sales order
+            const response = await fetch("http://localhost:3000/api/sales-orders", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -59,35 +68,22 @@ export default function CreateReturnLineItemsForm() {
             if (!response.ok) {
                 const errorResponse = await response.json();
                 console.error("Backend error:", errorResponse);
-                throw new Error(errorResponse.message || "Failed to create return line item");
+                throw new Error(errorResponse.message || "Failed to create sales order");
             }
 
             const result = await response.json();
-            console.log("Return line item created successfully:", result);
-            alert("Return line item created successfully!");
-
-            // Reset form after successful submission
-            setFormData({
-                lineItemId: "",
-                productId: "",
-                productNameId: "",
-                quantityReturned: "",
-                conditionOfProduct: "",
-                originalPrice: "",
-                refundAmount: "",
-                replacementStatus: "pending",
-            });
-
+            console.log("Sales order created successfully:", result);
+            alert("Sales order created successfully!");
         } catch (error) {
-            console.error("Error creating return line item:", error);
-            alert("Error creating return line item. Please try again.");
+            console.error("Error creating sales order:", error);
+            alert("Error creating sales order. Please try again.");
         }
     };
 
     return (
         <div className="container">
             <div className="form-container">
-                <h2>Create Return Line Items</h2>
+                <h2>Create Sales Order</h2>
 
                 <form onSubmit={handleSubmit}>
                     {/* Header Box */}
@@ -96,13 +92,25 @@ export default function CreateReturnLineItemsForm() {
 
                         <div className="data-container">
                             <div className="data">
-                                <label htmlFor="lineItemId">Line Item ID</label>
+                                <label htmlFor="orderId">Order ID</label>
                                 <input
                                     type="text"
-                                    id="lineItemId"
-                                    name="lineItemId"
+                                    id="orderId"
+                                    name="orderId"
                                     placeholder="(Primary Key)"
-                                    value={formData.lineItemId}
+                                    value={formData.orderId}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+
+                            <div className="data">
+                                <label htmlFor="customerId">Customer ID</label>
+                                <input
+                                    type="text"
+                                    id="customerId"
+                                    name="customerId"
+                                    value={formData.customerId}
                                     onChange={handleChange}
                                     required
                                 />
@@ -119,18 +127,6 @@ export default function CreateReturnLineItemsForm() {
                                     required
                                 />
                             </div>
-
-                            <div className="data">
-                                <label htmlFor="productNameId">Product Name</label>
-                                <input
-                                    type="text"
-                                    id="productNameId"
-                                    name="productNameId"
-                                    value={formData.productNameId}
-                                    onChange={handleChange}
-                                    required
-                                />
-                            </div>
                         </div>
                     </div>
 
@@ -140,81 +136,88 @@ export default function CreateReturnLineItemsForm() {
 
                         <div className="data-container">
                             <div className="data">
-                                <label htmlFor="quantityReturned">Quantity Returned</label>
+                                <label htmlFor="orderDate">Order Date</label>
                                 <input
-                                    type="number"
-                                    id="quantityReturned"
-                                    name="quantityReturned"
-                                    value={formData.quantityReturned}
+                                    type="date"
+                                    id="orderDate"
+                                    name="orderDate"
+                                    value={formData.orderDate}
                                     onChange={handleChange}
                                     required
                                 />
                             </div>
 
                             <div className="data">
-                                <label htmlFor="conditionOfProduct">Condition of Product</label>
+                                <label htmlFor="requiredDate">Required Date</label>
+                                <input
+                                    type="date"
+                                    id="requiredDate"
+                                    name="requiredDate"
+                                    value={formData.requiredDate}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+
+                            <div className="data">
+                                <label htmlFor="deliveryBlock">Delivery Block</label>
+                                <input
+                                    type="text"
+                                    id="deliveryBlock"
+                                    name="deliveryBlock"
+                                    value={formData.deliveryBlock}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+
+                            <div className="data">
+                                <label htmlFor="orderStatus">Order Status</label>
                                 <select
-                                    id="conditionOfProduct"
-                                    name="conditionOfProduct"
-                                    value={formData.conditionOfProduct}
+                                    id="orderStatus"
+                                    name="orderStatus"
+                                    value={formData.orderStatus}
                                     onChange={handleChange}
-                                    required
-                                >
-                                    <option value="">Select condition</option>
-                                    <option value="new">New</option>
-                                    <option value="like_new">Like New</option>
-                                    <option value="used">Used</option>
-                                    <option value="damaged">Damaged</option>
-                                </select>
-                            </div>
-
-                            <div className="data">
-                                <label htmlFor="originalPrice">Original Price</label>
-                                <input
-                                    type="number"
-                                    id="originalPrice"
-                                    name="originalPrice"
-                                    step="0.01"
-                                    value={formData.originalPrice}
-                                    onChange={handleChange}
-                                    required
-                                />
-                            </div>
-
-                            <div className="data">
-                                <label htmlFor="refundAmount">Refund Amount</label>
-                                <input
-                                    type="number"
-                                    id="refundAmount"
-                                    name="refundAmount"
-                                    step="0.01"
-                                    value={formData.refundAmount}
-                                    onChange={handleChange}
-                                    required
-                                />
-                            </div>
-
-                            <div className="data">
-                                <label htmlFor="replacementStatus">Replacement Status</label>
-                                <select
-                                    id="replacementStatus"
-                                    name="replacementStatus"
-                                    value={formData.replacementStatus}
-                                    onChange={handleChange}
-                                    required
                                 >
                                     <option value="pending">Pending</option>
-                                    <option value="approved">Approved</option>
-                                    <option value="rejected">Rejected</option>
-                                    <option value="processed">Processed</option>
+                                    <option value="confirmed">Confirmed</option>
+                                    <option value="shipped">Shipped</option>
+                                    <option value="delivered">Delivered</option>
+                                    <option value="cancelled">Cancelled</option>
                                 </select>
+                            </div>
+
+                            <div className="data">
+                                <label htmlFor="paymentStatus">Payment Status</label>
+                                <select
+                                    id="paymentStatus"
+                                    name="paymentStatus"
+                                    value={formData.paymentStatus}
+                                    onChange={handleChange}
+                                >
+                                    <option value="unpaid">Unpaid</option>
+                                    <option value="partiallyPaid">Partially Paid</option>
+                                    <option value="fullyPaid">Fully Paid</option>
+                                </select>
+                            </div>
+
+                            <div className="data">
+                                <label htmlFor="totalAmount">Total Amount</label>
+                                <input
+                                    type="float"
+                                    id="totalAmount"
+                                    name="totalAmount"
+                                    value={formData.totalAmount}
+                                    onChange={handleChange}
+                                    required
+                                />
                             </div>
                         </div>
                     </div>
 
                     {/* Submit Button */}
                     <div className="submit-button">
-                        <button type="submit">Create Return Line Item</button>
+                        <button type="submit">Create Sales Order</button>
                     </div>
                 </form>
             </div>

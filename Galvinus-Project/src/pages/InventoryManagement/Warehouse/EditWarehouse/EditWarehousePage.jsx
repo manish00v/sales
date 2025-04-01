@@ -6,8 +6,10 @@ import { useNavigate } from "react-router-dom";
 
 const EditWarehousePage = () => {
   const { setGoBackUrl } = useContext(FormPageHeaderContext);
-  const navigate = useNavigate(); // ✅ Initialize navigation
+  const navigate = useNavigate();
   const token = localStorage.getItem("accessToken");
+  const [isChecking, setIsChecking] = useState(false);
+  const [errors, setErrors] = useState({});
 
   const [formData, setFormData] = useState({
     warehouseId: "",
@@ -19,19 +21,63 @@ const EditWarehousePage = () => {
     warehouseType: "",
   });
 
-  // ✅ Fix handleChange function
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevState) => ({
       ...prevState,
-      [name]: value, // ✅ Dynamically update state
+      [name]: value,
     }));
+    // Clear error when user types
+    if (errors[name]) {
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        [name]: "",
+      }));
+    }
+  };
+
+  // Check if warehouse exists in database
+  const checkWarehouseExists = async (warehouseId) => {
+    try {
+      const response = await fetch(
+        `http://localhost:7857/api/warehouse/${warehouseId}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return response.ok;
+    } catch (error) {
+      console.error("Error checking warehouse:", error);
+      return false;
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsChecking(true);
+    setErrors({});
 
     try {
+      // Validate required field
+      if (!formData.warehouseId.trim()) {
+        setErrors({ warehouseId: "Warehouse ID is required" });
+        setIsChecking(false);
+        return;
+      }
+
+      // Check if warehouse exists
+      const warehouseExists = await checkWarehouseExists(formData.warehouseId);
+      if (!warehouseExists) {
+        alert("Warehouse ID does not exist in database");
+        setErrors({ warehouseId: "Warehouse ID not found" });
+        setIsChecking(false);
+        return;
+      }
+
+      // Proceed with fetching warehouse data
       const response = await fetch(
         `http://localhost:7857/api/warehouse/get-warehouse?warehouseId=${formData.warehouseId}`,
         {
@@ -45,20 +91,21 @@ const EditWarehousePage = () => {
       const data = await response.json();
       if (response.ok) {
         console.log("Fetched warehouse:", data);
-
-        // ✅ Navigate and pass `data` using `state`
         navigate(`/editwarehousepage/${formData.warehouseId}`, {
           state: { warehouseData: data },
         });
       } else {
         console.log("Error fetching warehouse", data.error);
-        alert(`Error fetching warehouse :${data.error}`);
+        alert(`Error fetching warehouse: ${data.error}`);
         setFormData({
           warehouseId: "",
         });
       }
     } catch (error) {
       console.log("Error:", error);
+      alert("Network error: Unable to fetch warehouse data.");
+    } finally {
+      setIsChecking(false);
     }
   };
 
@@ -87,10 +134,17 @@ const EditWarehousePage = () => {
                   onChange={handleChange}
                   required
                 />
+                {errors.warehouseId && (
+                  <span className="error">{errors.warehouseId}</span>
+                )}
               </div>
             </div>
-            <button className="edit-btn" type="submit">
-              Edit
+            <button 
+              className="edit-btn" 
+              type="submit"
+              disabled={isChecking}
+            >
+              {isChecking ? "Checking..." : "Edit"}
             </button>
           </form>
         </div>

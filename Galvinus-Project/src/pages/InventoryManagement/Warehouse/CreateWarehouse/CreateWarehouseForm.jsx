@@ -15,6 +15,7 @@ export default function CreateWarehouseForm() {
   });
 
   const [errors, setErrors] = useState({});
+  const [isCheckingProduct, setIsCheckingProduct] = useState(false);
   const navigate = useNavigate();
 
   // Validate numeric fields
@@ -28,6 +29,36 @@ export default function CreateWarehouseForm() {
   const validateField = (name, value) => {
     if (!value) return `${name} is required.`;
     return "";
+  };
+
+  // Check if product exists in database
+  const checkProductExists = async (productId) => {
+    if (!productId) return false;
+    
+    try {
+      const response = await fetch(
+        `http://localhost:3001/api/products/${productId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      
+      if (response.ok) {
+        return true;
+      } else if (response.status === 404) {
+        return false;
+      } else {
+        console.error("Error checking product:", response.statusText);
+        return false;
+      }
+    } catch (error) {
+      console.error("Request failed:", error);
+      return false;
+    }
   };
 
   // Handle input changes
@@ -64,6 +95,20 @@ export default function CreateWarehouseForm() {
 
     if (!isFormValid()) {
       console.log("Form invalid, please correct the errors");
+      return;
+    }
+
+    // Check if product exists before submitting
+    setIsCheckingProduct(true);
+    const productExists = await checkProductExists(formData.productId);
+    setIsCheckingProduct(false);
+
+    if (!productExists) {
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        productId: "Product ID not found in database",
+      }));
+      alert("Product ID not found");
       return;
     }
 
@@ -238,9 +283,9 @@ export default function CreateWarehouseForm() {
           <button
             type="submit"
             className="submit-btn"
-            disabled={!isFormValid()}
+            disabled={!isFormValid() || isCheckingProduct}
           >
-            Submit
+            {isCheckingProduct ? "Checking Product..." : "Submit"}
           </button>
         </form>
       </div>

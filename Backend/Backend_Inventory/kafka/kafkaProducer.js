@@ -1,9 +1,10 @@
+// inventory-service/kafka/kafkaProducer.js
 const { Kafka } = require('kafkajs');
 
 class KafkaProducer {
     constructor() {
         this.kafka = new Kafka({
-            clientId: 'shipment-service',
+            clientId: 'inventory-service',
             brokers: ['localhost:9092'],
         });
         this.producer = this.kafka.producer();

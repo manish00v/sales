@@ -1,9 +1,18 @@
 const invoiceService = require("../services/invoice.service");
+const KafkaProducer = require("../kafka/kafkaProducer");
 
 exports.createInvoice = async (req, res) => {
   try {
-    const invoiceData = req.body; // Extract invoice details from request body
+    const invoiceData = req.body;
     const invoice = await invoiceService.createInvoice(invoiceData);
+
+    // Publish Kafka event
+    await KafkaProducer.publish('invoice-events', {
+      service: 'billing-service',
+      event: 'invoice.created',
+      message: `Invoice ${invoice.invoiceId} created for order ${invoice.orderId}`,
+      data: invoice
+    });
 
     res.status(201).json({
       success: true,
@@ -13,7 +22,7 @@ exports.createInvoice = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: "InvoiceId already exists",
+      message: "Error creating invoice",
       error: error.message,
     });
   }
@@ -24,29 +33,27 @@ exports.editInvoice = async (req, res) => {
     const { invoiceId } = req.params;
     const updateData = req.body;
 
-    if (!invoiceId) {
-      return res.status(400).json({ message: "Invoice ID is required." });
-    }
+    const updatedInvoice = await invoiceService.updateInvoice(invoiceId, updateData);
 
-    const updatedInvoice = await invoiceService.updateInvoice(
-      invoiceId,
-      updateData
-    );
+    // Publish Kafka event
+    await KafkaProducer.publish('invoice-events', {
+      service: 'billing-service',
+      event: 'invoice.updated',
+      message: `Invoice ${invoiceId} updated`,
+      data: updatedInvoice
+    });
 
-    if (!updatedInvoice) {
-      return res
-        .status(404)
-        .json({ message: "Invoice not found or update failed." });
-    }
-
-    return res
-      .status(200)
-      .json({ message: "Invoice updated successfully", updatedInvoice });
+    res.status(200).json({ 
+      message: "Invoice updated successfully", 
+      updatedInvoice 
+    });
   } catch (error) {
     console.error("Error updating invoice:", error);
-    return res.status(500).json({ message: error });
+    res.status(500).json({ message: error.message });
   }
 };
+
+// getInvoice and getInvoiceByOrder remain the same (but ensure they don't try to include Order)
 
 exports.getInvoice = async (req, res) => {
   try {

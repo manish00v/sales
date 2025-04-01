@@ -1,4 +1,4 @@
-/* /* Base Container Styling */
+/* Base Container Styling */
 .container {
   grid-area: content;
   background-color: #f0f9ff;
@@ -299,10 +299,23 @@ tr:last-child td {
 .submit-btn {
   width: 200px;
   margin: auto;
+  background-color: #133e87;
+}
+.submit-btn:hover {
+  background-color: #0b2f9f;
+  color: #f2f2f3;
+  font-weight: bolder;
 }
 
 .edit-btn {
   width: 200px;
   margin: auto;
   margin-bottom: 20px;
+  background-color: #133e87;
+}
+
+.edit-btn:hover {
+  background-color: #0b2f9f;
+  color: #f2f2f3;
+  font-weight: bolder;
 }

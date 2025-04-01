@@ -1,4 +1,6 @@
 const inventoryService = require("../services/inventory.services");
+const KafkaProducer = require("../kafka/kafkaProducer"); // Import Kafka producer
+
 exports.createInventory = async (req, res) => {
   try {
     const {
@@ -8,39 +10,44 @@ exports.createInventory = async (req, res) => {
       stockLevel,
       reorderLevel,
       safetyStock,
-      lotNumber,
+      lotNumber
     } = req.body;
 
     // Validate required fields
-    if (
-      !inventoryId ||
-      !productId ||
-      !location ||
-      !stockLevel ||
-      !reorderLevel ||
-      !safetyStock ||
-      !lotNumber
-    ) {
+    if (!inventoryId || !productId || !location || !stockLevel || !reorderLevel || !safetyStock || !lotNumber) {
       return res.status(400).json({ error: "All fields are required" });
     }
 
-    // Call service function
+    // Create inventory
     const inventory = await inventoryService.createInventory(req.body);
 
-    // Response based on whether it's a new record or an update
+    // Publish inventory created event
+    try {
+      await KafkaProducer.connect();
+      await KafkaProducer.publish('inventory-events', {
+        service: 'inventory-service',
+        event: 'inventory.created',
+        message: `Inventory ${inventoryId} created for product ${productId}`,
+        data: inventory
+      });
+    } catch (kafkaError) {
+      console.error("Failed to publish inventory event:", kafkaError);
+      // Implement retry logic or store failed events
+    }
 
-    return res
-      .status(201)
-      .json({ message: "Inventory Created Successfully", inventory });
+    return res.status(201).json({ 
+      message: "Inventory Created Successfully", 
+      inventory 
+    });
   } catch (error) {
     console.error("Error in inventory controller:", error);
-    return res.status(500).json({ error: error });
+    return res.status(500).json({ error: error.message });
   }
 };
 
 exports.getInventory = async (req, res) => {
   try {
-    const { inventoryId } = req.query; // ✅ Use query parameters
+    const { inventoryId } = req.query;
 
     if (!inventoryId) {
       return res.status(400).json({ error: "inventoryId is required" });
@@ -61,16 +68,26 @@ exports.getInventory = async (req, res) => {
 
 exports.editInventory = async (req, res) => {
   try {
-    const { inventoryId } = req.params; // Extract inventoryId from URL params
+    const { inventoryId } = req.params;
     const updateData = req.body;
-
-    console.log("Updating Inventory ID:", inventoryId);
-    console.log("Update Data:", updateData);
 
     const updatedInventory = await inventoryService.editInventory(
       inventoryId,
       updateData
     );
+
+    // Publish inventory updated event
+    try {
+      await KafkaProducer.connect();
+      await KafkaProducer.publish('inventory-events', {
+        service: 'inventory-service',
+        event: 'inventory.updated',
+        message: `Inventory ${inventoryId} updated`,
+        data: updatedInventory
+      });
+    } catch (kafkaError) {
+      console.error("Failed to publish inventory update event:", kafkaError);
+    }
 
     res.json({
       message: "Inventory updated successfully",
@@ -78,8 +95,6 @@ exports.editInventory = async (req, res) => {
     });
   } catch (error) {
     console.error("Error updating inventory:", error);
-    res
-      .status(500)
-      .json({ error: "Failed to update inventory: " + error.message });
+    res.status(500).json({ error: "Failed to update inventory: " + error.message });
   }
 };

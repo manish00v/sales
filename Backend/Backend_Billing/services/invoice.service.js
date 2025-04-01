@@ -103,10 +103,10 @@ exports.getInvoiceById = async (invoiceId) => {
   try {
     return await prisma.invoice.findUnique({
       where: { invoiceId },
-      include: {
-        order: true,
-        customer: true
-      }
+      // include: {
+      //   order: true,
+      //   customer: true
+      // }
     });
   } catch (error) {
     console.error("Failed to fetch invoice:", error.message);

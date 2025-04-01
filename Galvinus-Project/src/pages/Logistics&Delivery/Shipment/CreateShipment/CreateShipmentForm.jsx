@@ -9,24 +9,83 @@ export default function CreateShipmentForm() {
   const [formData, setFormData] = useState({
     shipmentId: "",
     orderId: "",
-    trackingNumber: "", // Kept as string initially to handle empty state
+    trackingNumber: "",
     shipmentStatus: "PENDING",
     dispatchDate: "",
     estimatedDeliveryDate: "",
   });
 
   const [errors, setErrors] = useState({});
+  const [isChecking, setIsChecking] = useState(false);
 
-  // ✅ Handle input changes and convert `trackingNumber` to number
+  // Check if shipment ID exists
+  const checkShipmentExists = async (shipmentId) => {
+    try {
+      const response = await fetch(
+        `http://localhost:6744/api/shipment/get-shipment?shipmentId=${shipmentId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return response.ok;
+    } catch (error) {
+      console.error("Error checking shipment:", error);
+      return false;
+    }
+  };
+
+  // Check if order ID exists
+  const checkOrderExists = async (orderId) => {
+    try {
+      const response = await fetch(
+        `http://localhost:3000/api/sales-orders/${orderId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return response.ok;
+    } catch (error) {
+      console.error("Error checking order:", error);
+      return false;
+    }
+  };
+
+  // Check if tracking number is unique
+  const checkTrackingNumberUnique = async (trackingNumber) => {
+    try {
+      const response = await fetch(
+        `http://localhost:6744/api/shipment/tracking/${trackingNumber}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return !response.ok; // If response is not ok (404), then it's unique
+    } catch (error) {
+      console.error("Error checking tracking number:", error);
+      return false;
+    }
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
       ...prevData,
-      [name]: name === "trackingNumber" ? value.replace(/\D/, "") : value, // Allow only numbers
+      [name]: name === "trackingNumber" ? value.replace(/\D/, "") : value,
     }));
   };
 
-  // ✅ Validate form fields
   const validateForm = () => {
     let errors = {};
 
@@ -60,16 +119,54 @@ export default function CreateShipmentForm() {
     return Object.keys(errors).length === 0;
   };
 
-  // ✅ Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!validateForm()) return; // Prevent API call if validation fails
+    if (!validateForm()) return;
+
+    setIsChecking(true);
 
     try {
+      // Check if shipment ID already exists
+      const shipmentExists = await checkShipmentExists(formData.shipmentId);
+      if (shipmentExists) {
+        alert("Shipment ID already exists in database");
+        setErrors((prev) => ({
+          ...prev,
+          shipmentId: "Shipment ID already exists",
+        }));
+        setIsChecking(false);
+        return;
+      }
+
+      // Check if order ID exists
+      const orderExists = await checkOrderExists(formData.orderId);
+      if (!orderExists) {
+        alert("Order ID does not exist in database");
+        setErrors((prev) => ({
+          ...prev,
+          orderId: "Order ID not found",
+        }));
+        setIsChecking(false);
+        return;
+      }
+
+      // Check if tracking number is unique
+      const trackingUnique = await checkTrackingNumberUnique(formData.trackingNumber);
+      if (!trackingUnique) {
+        alert("Tracking Number must be unique");
+        setErrors((prev) => ({
+          ...prev,
+          trackingNumber: "Tracking Number must be unique",
+        }));
+        setIsChecking(false);
+        return;
+      }
+
+      // All checks passed, proceed with submission
       const payload = {
         ...formData,
-        trackingNumber: Number(formData.trackingNumber), // Ensure trackingNumber is sent as a number
+        trackingNumber: Number(formData.trackingNumber),
       };
 
       const response = await fetch(
@@ -104,6 +201,8 @@ export default function CreateShipmentForm() {
     } catch (error) {
       console.log("Error:", error);
       alert("An error occurred while creating the shipment.");
+    } finally {
+      setIsChecking(false);
     }
   };
 
@@ -220,8 +319,12 @@ export default function CreateShipmentForm() {
             </div>
           </div>
 
-          <button type="submit" className="submit-btn">
-            Submit
+          <button 
+            type="submit" 
+            className="submit-btn"
+            disabled={isChecking}
+          >
+            {isChecking ? "Validating..." : "Submit"}
           </button>
         </form>
       </div>

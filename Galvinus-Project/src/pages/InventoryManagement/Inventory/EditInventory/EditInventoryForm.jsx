@@ -23,7 +23,6 @@ export default function EditInventoryForm() {
   const [formData, setFormData] = useState(() => ({
     inventoryId: inventoryData?.inventoryId || "",
     productId: inventoryData?.productId || "",
-    warehouseId: inventoryData?.warehouseId || "",
     location: inventoryData?.location || "",
     stockLevel: inventoryData?.stockLevel || "",
     reorderLevel: inventoryData?.reorderLevel || "",
