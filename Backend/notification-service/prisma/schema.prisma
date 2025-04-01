@@ -10,7 +10,7 @@ datasource db {
 model Notification {
   id        Int      @id @default(autoincrement())
   type      String   
-  orderId   Int?
+  orderId   String
   message   String
   timestamp DateTime @default(now())
 }

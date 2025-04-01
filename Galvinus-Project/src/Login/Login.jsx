@@ -1,50 +1,64 @@
-// src/components/Login.js
-import './login.css';
-import { useState, useContext, useEffect } from "react";
-import { AuthContext } from "../contexts/AuthContext";
+import "./login.css";
+import { useState } from "react";
 import galvinusLogo from "../assets/galvinus_logo.jpeg";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 const Login = () => {
-  useEffect(() => {
-    document.body.classList.add('login-page');
-    return () => {
-      document.body.classList.remove('login-page');
-    };
-  }, []);
+  const navigate = useNavigate();
+  const [login, setLogin] = useState({
+    email: "",
+    password: "",
+  });
 
-  const [emailOrPhone, setEmailOrPhone] = useState("");
-  const [password, setPassword] = useState("");
-  const { login } = useContext(AuthContext);
+  const [error, setError] = useState("");
 
-  // Function to detect if the input is an email or phone number
-  const detectInputType = (input) => {
-    // Regex for email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    // Regex for phone number validation (simple check for digits, adjust as needed)
-    const phoneRegex = /^\d{10}$/; // Assumes a 10-digit phone number
-
-    if (emailRegex.test(input)) {
-      return "email";
-    } else if (phoneRegex.test(input)) {
-      return "phone";
-    } else {
-      return "invalid";
-    }
+  const handleChange = (e) => {
+    const { value, name } = e.target;
+    setLogin((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+    setError(""); // Clear error when typing
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const inputType = detectInputType(emailOrPhone);
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          email: login.email,
+          password: login.password,
+        }),
+      });
 
-    if (inputType === "invalid") {
-      alert("Please enter a valid email or phone number.");
-      return;
-    }
+      const data = await response.json();
 
-    if (login(inputType === "email" ? emailOrPhone : null, inputType === "phone" ? emailOrPhone : null, password)) {
-      alert("Login successful!");
-    } else {
-      alert("Invalid credentials");
+      if (!response.ok) {
+        alert(data.error);
+        throw new Error(data.error || "Login failed");
+      }
+
+      localStorage.setItem("accessToken", data.accessToken); // Store token
+      localStorage.setItem("refreshToken", data.refreshToken);
+      toast.success("User logged in successfully!", { position: "top-center" });
+
+      setLogin({
+        email: "",
+        password: "",
+      });
+
+      setError(""); // Clear error after successful login
+
+      setTimeout(() => {
+        navigate("/home");
+      }, 1500);
+    } catch (error) {
+      setError(error.message); // Set error message from backend
     }
   };
 
@@ -58,19 +72,25 @@ const Login = () => {
         <input
           type="text"
           placeholder="Email or Phone Number"
-          value={emailOrPhone}
-          onChange={(e) => setEmailOrPhone(e.target.value)}
+          name="email"
+          value={login.email}
+          onChange={handleChange}
           required
+          autoComplete="email"
         />
         <input
           type="password"
           placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          name="password"
+          value={login.password}
+          onChange={handleChange}
           required
+          autoComplete="current-password"
         />
+
         <button type="submit">Login</button>
       </form>
+      {error && <p className="error-message">{error}</p>}
       <p>
         <a href="forgotpassword">Forgot Password?</a>
       </p>

@@ -130,7 +130,7 @@ import EditTaxConfigurationForm from "./pages/Billing&Invoicing/TaxConfiguration
 import DisplayReturnOrderForm from "./pages/Returns/ReturnOrder/DisplayReturnOrder/DisplayReturnOrderForm";
 import EditReturnOrderForm from "./pages/Returns/ReturnOrder/EditReturnOrder/EditReturnOrderForm";
 import DisplayReturnLineItemsForm from "./pages/Returns/ReturnLineItems/DisplayReturnLineItems/DisplayReturnLineItemsForm";
-import EditReturnLineItemsForm from "./pages/Returns/ReturnOrder/EditReturnOrder/EditReturnOrderForm";
+import EditReturnLineItemsForm from "./pages/Returns/ReturnLineItems/EditReturnLineItems/EditReturnLineItemsForm";
 
 import Profile from "./header/Profile/Profile";
 import Settings from "./header/Setting/Setting";
@@ -141,6 +141,9 @@ import Login from "./Login/Login";
 import ProtectedRoute from "./Login/ProtectedRoute";
 import SignUp from "./Login/SignUp";
 import ForgotPassword from "./Login/ForgotPassword";
+import ResetPassword from "./Login/ResetPassword";
+import PrivateRoute from "./Login/ProtectedRoute";
+
 function App() {
   return (
     <BrowserRouter>
@@ -148,6 +151,15 @@ function App() {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/forgotpassword" element={<ForgotPassword />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route
+          path="/layout"
+          element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/"
           element={
@@ -155,8 +167,7 @@ function App() {
               <Layout />
             </ProtectedRoute>
           }
-        />
-        <Route path="/" element={<Layout />}>
+        >
           <Route path="/salesorder" element={<SalesOrderPage />} />
           <Route path="/lineitems" element={<LineItemsPage />} />
           <Route path="/customer" element={<CustomerPage />} />
@@ -165,10 +176,18 @@ function App() {
           <Route path="/discountrules" element={<DiscountRulesPage />} />
           <Route path="/product" element={<ProductPage />} />
           <Route path="/discount" element={<DiscountPage />} />
-          <Route path="/inventory" element={<InventoryPage />} />
+          <Route
+            path="/inventory"
+            element={
+              <ProtectedRoute>
+                <InventoryPage />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/productmovement" element={<ProductMovementPage />} />
 
           <Route path="/warehouse" element={<WarehousePage />} />
+
           <Route path="/carrier" element={<CarrierPage />} />
           <Route path="/deliveryroute" element={<DeliveryRoutePage />} />
           <Route path="/deliveryvehicle" element={<DeliveryVehiclePage />} />
@@ -183,7 +202,14 @@ function App() {
           <Route path="/returnlineitems" element={<ReturnLineItemsPage />} />
           <Route path="/returnorder" element={<ReturnOrderPage />} />
 
-          <Route path="/home" element={<Homepage />} />
+          <Route
+            path="/home"
+            element={
+              <PrivateRoute>
+                <Homepage />
+              </PrivateRoute>
+            }
+          />
 
           <Route path="/createsalesorder" element={<CreateSalesOrderPage />} />
           <Route path="/editsalesorder" element={<EditSalesOrderPage />} />
@@ -233,7 +259,14 @@ function App() {
           <Route path="/creatediscount" element={<CreateDiscountPage />} />
           <Route path="/editdiscount" element={<EditDiscountPage />} />
           <Route path="/displaydiscount" element={<DisplayDiscountPage />} />
-          <Route path="/createinventory" element={<CreateInventoryPage />} />
+          <Route
+            path="/createinventory"
+            element={
+              <PrivateRoute>
+                <CreateInventoryPage />
+              </PrivateRoute>
+            }
+          />
           <Route path="/editinventory" element={<EditInventoryPage />} />
           <Route path="/displayinventory" element={<DisplayInventoryPage />} />
           <Route path="/createwarehouse" element={<CreateWarehousePage />} />
@@ -333,8 +366,12 @@ function App() {
             path="/displayreturnorder"
             element={<DisplayReturnOrderPage />}
           />
+ <Route
+            path="/editcarrierpage/:carrierId"
+            element={<EditCarrierForm />}
+          />
 
-          <Route
+                    <Route
             path="/displaysalesorderform/:orderId/:customerId"
             element={<DisplaySalesOrderForm />}
           />
@@ -379,86 +416,115 @@ function App() {
           />
           <Route path="/displayproductform/:productId/:category" element={<DisplayProductForm />} />         
           <Route path="/editproductform/:productId" element={<EditProductForm />} />
+         
           <Route
-            path="/displayinventorypage"
+            path="/displayinventorypage/:inventoryId"
             element={<DisplayInventoryForm />}
           />
-          <Route path="/editinventorypage" element={<EditInventoryForm />} />
           <Route
-            path="/displayproductmovementpage"
+            path="/editinventorypage/:inventoryId"
+            element={<EditInventoryForm />}
+          />
+          <Route
+            path="/displayproductmovementpage/:movementId"
             element={<DisplayProductMovementForm />}
           />
           <Route
-            path="/editproductmovementpage"
+            path="/editproductmovementpage/:movementId"
             element={<EditProductMovementForm />}
           />
 
           <Route
-            path="/displaywarehousepage"
+            path="/displaywarehousepage/:warehouseId"
             element={<DisplayWarehouseForm />}
           />
-          <Route path="/editwarehousepage" element={<EditWarehouseForm />} />
+          <Route
+            path="/editwarehousepage/:warehouseId"
+            element={<EditWarehouseForm />}
+          />
           <Route path="/displaycarrierpage" element={<DisplayCarrierForm />} />
           <Route path="/editcarrierpage" element={<EditCarrierForm />} />
           <Route
-            path="/displaydeliveryroutepage"
+            path="/displaydeliveryroutepage/:routeId"
             element={<DisplayDeliveryRouteForm />}
           />
           <Route
-            path="/editdeliveryroutepage"
+            path="/editdeliveryroutepage/:routeId"
             element={<EditDeliveryRouteForm />}
           />
           <Route
-            path="/displaydeliveryvehiclepage"
+            path="/displaydeliveryvehiclepage/:vehicleId"
             element={<DisplayDeliveryVehicleForm />}
           />
           <Route
-            path="/editdeliveryvehiclepage"
+            path="/editdeliveryvehiclepage/:vehicleId"
             element={<EditDeliveryVehicleForm />}
           />
           <Route
             path="/displayshipmentpage"
             element={<DisplayShipmentForm />}
           />
-          <Route path="/editshipmentpage" element={<EditShipmentForm />} />
           <Route
-            path="/displaycurrencyexchangeratepage"
+            path="/editshipmentpage/:shipmentId"
+            element={<EditShipmentForm />}
+          />
+          <Route
+            path="/displaycurrencyexchangeratepage/:invoiceId"
             element={<DisplayCurrencyExchangeRateForm />}
           />
           <Route
-            path="/editcurrencyexchangeratepage"
+            path="/editcurrencyexchangeratepage/:invoiceId"
             element={<EditCurrencyExchangeRateForm />}
           />
-          <Route path="/displayinvoicepage" element={<DisplayInvoiceForm />} />
-          <Route path="/editinvoicepage" element={<EditInvoiceForm />} />
-          <Route path="/displaypaymentpage" element={<DisplayPaymentForm />} />
-          <Route path="/editpaymentpage" element={<EditPaymentForm />} />
           <Route
-            path="/displaytaxconfigurationpage"
+            path="/displayinvoicepage/:invoiceId"
+            element={<DisplayInvoiceForm />}
+          />
+          <Route
+            path="/editinvoicepage/:invoiceId"
+            element={<EditInvoiceForm />}
+          />
+          <Route
+            path="/displaypaymentpage/:paymentId"
+            element={<DisplayPaymentForm />}
+          />
+          <Route
+            path="/editpaymentpage/:paymentId"
+            element={<EditPaymentForm />}
+          />
+          <Route
+            path="/displaytaxconfigurationpage/:taxId"
             element={<DisplayTaxConfigurationForm />}
           />
           <Route
-            path="/edittaxconfigurationpage"
+            path="/edittaxconfigurationpage/:taxId"
             element={<EditTaxConfigurationForm />}
           />
           <Route
-            path="/displayreturnlineitemspage"
+            path="/displayreturnlineitemsform/:lineItemId/:productId"
             element={<DisplayReturnLineItemsForm />}
           />
           <Route
-            path="/editreturnlineitemspage"
+            path="/editreturnlineitemsform/:lineItemId"
             element={<EditReturnLineItemsForm />}
           />
           <Route
-            path="/displayreturnorderpage"
+            path="/displayreturnorderform/:returnOrderId/:customerId"
             element={<DisplayReturnOrderForm />}
           />
           <Route
-            path="/editreturnorderpage"
+            path="/editreturnorderform/:returnOrderId"
             element={<EditReturnOrderForm />}
           />
 
-          <Route path="/profile" element={<Profile />} />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/setting" element={<Settings />} />
           <Route path="/notification" element={<NotificationSettings />} />
           <Route

@@ -23,6 +23,7 @@ model Customer {
   lineItems       LineItems[]
   salesPersons    SalesPerson[]
   salesOrders     SalesOrder[]
+  returnOrder     ReturnOrder[]
 }
 
 model SalesOrder {
@@ -39,6 +40,7 @@ model SalesOrder {
   // Relationships
   lineItems       LineItems[]
   salesPersons    SalesPerson[]
+  returnOrder     ReturnOrder[]
   customer        Customer    @relation(fields: [customerId], references: [customerId])
 }
 
@@ -72,4 +74,40 @@ model SalesPerson {
   // Relationships
   customer        Customer    @relation(fields: [customerId], references: [customerId])
   salesOrder      SalesOrder  @relation(fields: [orderId], references: [orderId])
+}
+
+
+model ReturnOrder {
+  returnOrderId     String         @id @default(uuid())
+  customerId        String
+  orderId           String
+  productId         String
+  returnDate        DateTime       @default(now())
+  reasonOfReturn    String
+  approvalStatus    String
+  returnStatus      String
+  totalRefundAmount Float
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+// Relationships
+
+  customer          Customer    @relation(fields: [customerId], references: [customerId])
+  salesOrder        SalesOrder  @relation(fields: [orderId], references: [orderId])
+  
+}
+
+
+model ReturnLineItem {
+  lineItemId        String   @id @default(uuid())
+  productId         String
+  productName       String
+  quantityReturned  Int
+  conditionOfProduct String
+  originalPrice     Float
+  refundAmount      Float
+  replacementStatus String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
 }

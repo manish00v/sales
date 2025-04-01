@@ -1,133 +1,225 @@
 import React, { useState } from "react";
 import "../../../../components/Layout/Styles/BoxFormStyles.css";
+import { useNavigate } from "react-router-dom";
 
 export default function CreateCarrierForm() {
-	const [formData, setFormData] = useState({
-		customerId: "",
-		orderId: "",
-		productId: "",
-		orderDate: "",
-		requiredDate: "",
-		deliveryBlock: "",
-		orderStatus: "pending",
-		paymentStatus: "unpaid",
-		total: "",
-	});
+  const token = localStorage.getItem("accessToken");
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    carrierId: "",
+    shipmentId: "",
+    orderId: "",
+    name: "",
+    serviceType: "",
+    contactDetails: "",
+    costStructure: "",
+  });
 
-	const handleChange = (e) => {
-		const { name, value } = e.target;
-		setFormData((prevData) => ({
-			...prevData,
-			[name]: value,
-		}));
-	};
+  const [errors, setErrors] = useState({ contactDetails: "" });
 
-	return (
-		<div className="container">
-			<div className="form-container">
-				<h2>Create Discount</h2>
+  const handleChange = (e) => {
+    const { name, value } = e.target;
 
-				<form>
-					{/* Header Box */}
-					<div className="header-box">
-						<h2>Header</h2>
+    if (name === "contactDetails") {
+      // Validate if only numbers are allowed
+      if (!/^\d*$/.test(value)) {
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          contactDetails: "Contact details must be a valid number.",
+        }));
+      } else {
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          contactDetails: "",
+        }));
+      }
+    }
 
-						<div className="data-container">
-							<div className="data">
-								<label htmlFor="carrierId">Carrier ID</label>
-								<input
-									type="text"
-									id="carrierId"
-									name="carrierId"
-									placeholder="(Primary Key)"
-									value={formData.customerId}
-									onChange={handleChange}
-									required
-								/>
-							</div>
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: name === "costStructure" ? value.replace(/\D/g, "") : value,
+    }));
+  };
 
-							<div className="data">
-								<label htmlFor="shipmentId">Shipment ID</label>
-								<input
-									type="text"
-									id="shipmentId"
-									name="shipmentId"
-									value={formData.orderId}
-									onChange={handleChange}
-									required
-								/>
-							</div>
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-							<div className="data">
-								<label htmlFor="orderId">Order ID</label>
-								<input
-									type="text"
-									id="orderId"
-									name="orderId"
-									value={formData.orderId}
-									onChange={handleChange}
-									required
-								/>
-							</div>
-						</div>
-					</div>
+    if (errors.contactDetails) {
+      alert("Please correct the errors before submitting.");
+      return;
+    }
 
-					{/* Item Box */}
-					<div className="item-box">
-						<h2>Item</h2>
+    const phoneRegex = /^[0-9]{10}$/; // Adjust this regex if needed
+    if (!phoneRegex.test(formData.contactDetails)) {
+      alert("Please enter a valid 10-digit phone number.");
+      return;
+    }
 
-						<div className="data-container">
-							<div className="data">
-								<label htmlFor="name">Name</label>
-								<input
-									type="text"
-									id="name"
-									name="name"
-									value={formData.orderDate}
-									onChange={handleChange}
-									required
-								/>
-							</div>
+    const payload = {
+      ...formData,
+      contactDetails: formData.contactDetails.trim(),
+      costStructure: Number(formData.costStructure) || 0,
+    };
 
-							<div className="data">
-								<label htmlFor="serviceType">Service Type</label>
-								<input
-									type="text"
-									id="serviceType"
-									name="serviceType"
-									value={formData.requiredDate}
-									onChange={handleChange}
-									required
-								/>
-							</div>
+    try {
+      const response = await fetch(
+        "http://localhost:6744/api/carrier/create-carrier",
+        {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+      const data = await response.json();
+      if (response.ok) {
+        console.log(data);
+        setFormData({
+          carrierId: "",
+          shipmentId: "",
+          orderId: "",
+          name: "",
+          serviceType: "",
+          contactDetails: "",
+          costStructure: "",
+        });
+        navigate("/carrier");
+      } else {
+        console.log(data.error);
+        alert(data.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
-							<div className="data">
-								<label htmlFor="contactDetails">Contact Details</label>
-								<input
-									type="text"
-									id="contactDetails"
-									name="contactDetails"
-									value={formData.deliveryBlock}
-									onChange={handleChange}
-									required
-								/>
-							</div>
+  return (
+    <div className="container">
+      <div className="form-container">
+        <h2>Create Carrier</h2>
 
-							<div className="data">
-								<label htmlFor="costStructure">Cost Structure</label>
-								<input
-									type="text"
-									id="costStructure"
-									name="costStructure"
-									value={formData.deliveryBlock}
-									onChange={handleChange}
-									required
-								/>
-							</div>
-						</div>
-					</div>
-				</form>
-			</div>
-		</div>
-	);
+        <form onSubmit={handleSubmit}>
+          {/* Header Box */}
+          <div className="header-box">
+            <h2>Header</h2>
+
+            <div className="data-container">
+              <div className="data">
+                <label htmlFor="carrierId">Carrier ID</label>
+                <input
+                  type="text"
+                  id="carrierId"
+                  name="carrierId"
+                  placeholder="(Primary Key)"
+                  value={formData.carrierId}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              <div className="data">
+                <label htmlFor="shipmentId">Shipment ID</label>
+                <input
+                  type="text"
+                  id="shipmentId"
+                  name="shipmentId"
+                  value={formData.shipmentId}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              <div className="data">
+                <label htmlFor="orderId">Order ID</label>
+                <input
+                  type="text"
+                  id="orderId"
+                  name="orderId"
+                  value={formData.orderId}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Item Box */}
+          <div className="item-box">
+            <h2>Item</h2>
+
+            <div className="data-container">
+              <div className="data">
+                <label htmlFor="name">Name</label>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              <div className="data">
+                <label htmlFor="serviceType">Service Type</label>
+                <select
+                  id="serviceType"
+                  name="serviceType"
+                  value={formData.serviceType}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Select Service Type</option>
+                  <option value="Standard_Shipping">Standard Shipping</option>
+                  <option value="Express_Shipping">Express Shipping</option>
+                  <option value="Same_Day_Delivery">Same-Day Delivery</option>
+                  <option value="Overnight_Shipping">Overnight Shipping</option>
+                  <option value="Two_Day_Shipping">Two-Day Shipping</option>
+                  <option value="International_Shipping">
+                    International Shipping
+                  </option>
+                </select>
+              </div>
+
+              <div className="data">
+                <label htmlFor="contactDetails">Contact Details</label>
+                <input
+                  type="text"
+                  id="contactDetails"
+                  name="contactDetails"
+                  value={formData.contactDetails}
+                  onChange={handleChange}
+                  required
+                />
+                {errors.contactDetails && (
+                  <p className="error">{errors.contactDetails}</p>
+                )}
+              </div>
+
+              <div className="data">
+                <label htmlFor="costStructure">Cost Structure</label>
+                <input
+                  type="text"
+                  id="costStructure"
+                  name="costStructure"
+                  value={formData.costStructure}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+            </div>
+          </div>
+          <button
+            type="submit"
+            className="submit-btn"
+            disabled={!!errors.contactDetails}
+          >
+            Submit
+          </button>
+        </form>
+      </div>
+    </div>
+  );
 }

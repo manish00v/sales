@@ -1,5 +1,5 @@
 
-import React, { useContext, useEffect } from "react";
+import { useContext, useEffect } from "react";
 import { FormPageHeaderContext } from "../../../../contexts/FormPageHeaderContext";
 import FormPageHeader from "../../../../components/Layout/FormPageHeader/FormPageHeader";
 import CreateReturnOrderForm from "./CreateReturnOrderForm";
@@ -11,7 +11,7 @@ const CreateReturnOrderPage = () => {
 		setBtn("Create");
 		setUrl("/returnorder");
 		setGoBackUrl("/returnorder");
-	}, []);
+	});
 
 	return (
 		<>

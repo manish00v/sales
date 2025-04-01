@@ -16,7 +16,7 @@ const FormPageHeader = () => {
 				</Link>
 			)} */}
 
-			{btn.includes("Edit") && (
+			{/* {btn.includes("Edit") && (
 				<Link to={url} className="icon-button">
 					<i className="fas fa-edit" />
 					{btn}
@@ -28,7 +28,7 @@ const FormPageHeader = () => {
 					<i className="fa-solid fa-tv"></i>
 					{btn}
 				</Link>
-			)}
+			)} */}
 			
 			{btn.includes("Save") && (
                 <Link to={url} className="icon-button">
