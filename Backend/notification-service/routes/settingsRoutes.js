@@ -7,7 +7,7 @@ const controller = new SettingsController();
 // GET /api/settings
 router.get('/settings', controller.getSettings.bind(controller));
 
-// PUT /api/settings
-router.put('/settings', controller.updateSettings.bind(controller));
+// POST /api/settings
+router.post('/settings', controller.createOrUpdateSettings.bind(controller));
 
 export default router;

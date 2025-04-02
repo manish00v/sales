@@ -1,9 +1,10 @@
 import express from 'express';
 import cors from 'cors';
+import settingsRouter from './routes/settingsRoutes.js'; // Fixed import
 import WebSocketServer from './websocket/websocketServer.js';
 import KafkaConsumer from './kafka/kafkaConsumer.js';
 import { PrismaClient } from '@prisma/client';
-const settingsRouter = require('./routes/Setting.Routes');
+// Change this import
 
 
 const prisma = new PrismaClient();
@@ -15,8 +16,9 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true
 }));
-app.use(express.json());
 
+app.use(express.json());  // Keep only this one (removed bodyParser)
+app.use(express.urlencoded({ extended: true }));
 // Database connection check
 prisma.$connect()
   .then(() => console.log('Connected to database'))
@@ -36,14 +38,6 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal server error' });
 });
 
-// Start server
-const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`Settings endpoints available at:
-  - GET /api/settings
-  - PUT /api/settings`);
-});
 
 // Graceful shutdown
 process.on('SIGTERM', async () => {
@@ -57,88 +51,6 @@ const webSocketServer = new WebSocketServer(8080);
 // Initialize Kafka consumer
 const kafkaConsumer = new KafkaConsumer();
 
-// ====================== SETTINGS ENDPOINTS ====================== //
-
-/**
- * @api {get} /api/settings Get current settings
- * @apiName GetSettings
- */
-app.get('/api/settings', async (req, res) => {
-  try {
-    const settings = await prisma.settings.findFirst();
-    
-    // Return default settings if none exist
-    res.status(200).json(settings || {
-      companyName: '',
-      companyAddress: '',
-      timezone: 'UTC',
-      createdAt: new Date(),
-      updatedAt: new Date()
-    });
-    
-  } catch (error) {
-    console.error('GET /api/settings error:', error);
-    res.status(500).json({ 
-      error: 'Failed to fetch settings',
-      details: error.message 
-    });
-  }
-});
-
-/**
- * @api {put} /api/settings Update settings
- * @apiName UpdateSettings
- * @apiBody {String} companyName
- * @apiBody {String} companyAddress
- * @apiBody {String} timezone
- */
-app.put('/api/settings', async (req, res) => {
-  try {
-    const { companyName, companyAddress, timezone } = req.body;
-    
-    // Validate required fields
-    if (!companyName || !companyAddress || !timezone) {
-      return res.status(400).json({ 
-        error: 'Missing required fields',
-        required: ['companyName', 'companyAddress', 'timezone']
-      });
-    }
-
-    // Check for existing settings
-    const existingSettings = await prisma.settings.findFirst();
-    
-    let settings;
-    if (existingSettings) {
-      // Update existing settings
-      settings = await prisma.settings.update({
-        where: { id: existingSettings.id },
-        data: { 
-          companyName, 
-          companyAddress, 
-          timezone 
-        }
-      });
-    } else {
-      // Create new settings
-      settings = await prisma.settings.create({
-        data: { 
-          companyName, 
-          companyAddress, 
-          timezone 
-        }
-      });
-    }
-
-    res.status(200).json(settings);
-    
-  } catch (error) {
-    console.error('PUT /api/settings error:', error);
-    res.status(500).json({ 
-      error: 'Failed to save settings',
-      details: error.message 
-    });
-  }
-});
 
 // ====================== NOTIFICATION PROCESSING ====================== //
 
@@ -243,7 +155,7 @@ const server = app.listen(PORT, () => {
   console.log(`Notification Service running on port ${PORT}`);
   console.log(`Available endpoints:
   - GET  /api/settings
-  - PUT  /api/settings
+  - POST  /api/settings
   - WS   :8080 (WebSocket)`);
 }).on('error', (err) => {
   if (err.code === 'EADDRINUSE') {
