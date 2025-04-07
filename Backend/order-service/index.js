@@ -5,6 +5,9 @@ import salesOrderRoutes from './routes/salesOrderRoutes.js';
 import customerRoutes from './routes/customerRoutes.js'
 import lineItemsRoutes   from './routes/lineItemsRoutes.js'
 import salesPersonRoutes  from './routes/salesPersonRoutes.js'
+import returnOrderRoutes from './routes/returnOrderRoutes.js';
+import returnLineItemRoutes from './routes/returnLineItemsRoutes.js';
+
 dotenv.config(); // Load environment variables
 
 const app = express();
@@ -19,6 +22,9 @@ app.use('/api', salesOrderRoutes);
 app.use('/api', customerRoutes);
 app.use('/api', lineItemsRoutes);
 app.use('/api', salesPersonRoutes)
+app.use('/api', returnOrderRoutes);
+app.use('/api', returnLineItemRoutes);
+
 
 
 // Start the server

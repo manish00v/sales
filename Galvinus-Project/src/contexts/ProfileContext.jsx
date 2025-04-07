@@ -1,13 +1,13 @@
 // src/context/ProfileContext.js
-import { createContext, useState } from 'react';
+import { createContext, useState } from "react";
 
 export const ProfileContext = createContext();
 
 const ProfileProvider = ({ children }) => {
   const [profile, setProfile] = useState({
-    userName: 'Manish Vishwakarma',
-    email: 'manish.vishwkarma@galvinus.in',
-    number: '123-456-7890',
+    userName: "",
+    email: "",
+    phoneNumber: "",
     profilePicture: null,
   });
 
@@ -21,4 +21,4 @@ const ProfileProvider = ({ children }) => {
     </ProfileContext.Provider>
   );
 };
-export default ProfileProvider
+export default ProfileProvider;

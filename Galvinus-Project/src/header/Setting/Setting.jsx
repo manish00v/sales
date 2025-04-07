@@ -1,122 +1,170 @@
 import { useState, useEffect } from 'react';
-import Set from './Setting.module.css'; // Import the CSS module
+import Set from './Setting.module.css';
+
+const API_BASE_URL = 'http://localhost:4000/api';
 
 const Settings = () => {
-  const [timeZone, setTimeZone] = useState('UTC');
-  const [theme] = useState('light');
+  const [settings, setSettings] = useState({
+    companyName: '',
+    companyAddress: '',
+    timezone: 'UTC'
+  });
   const [isEditing, setIsEditing] = useState(false);
-  const [companyName, setCompanyName] = useState('');
-  const [address, setAddress] = useState('');
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Fetch settings when the component mounts
   useEffect(() => {
     fetchSettings();
   }, []);
 
-  // Fetch current settings from the backend
   const fetchSettings = async () => {
     try {
-      const response = await fetch('http://localhost:4000/settings');
+      setIsLoading(true);
+      const response = await fetch(`${API_BASE_URL}/settings`);
+      
       if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+        throw new Error(`Failed to fetch settings: ${response.status}`);
       }
+      
       const data = await response.json();
-      setCompanyName(data.companyName || '');
-      setAddress(data.companyAddress || '');
-      setTimeZone(data.timezone || 'UTC');
+      setSettings(data);
     } catch (error) {
-      console.error('Error fetching settings:', error.message);
+      console.error('Fetch error:', error);
+      setError(error.message);
+    } finally {
+      setIsLoading(false);
     }
   };
-
-  // Save updated settings to the backend
-  const saveSettings = async () => {
+  
+  const saveSettings = async (data) => {
     try {
-      const response = await fetch('http://localhost:4000/settings', {
-        method: 'PUT',
+      setIsLoading(true);
+      const response = await fetch(`${API_BASE_URL}/settings`, {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          companyName,
-          companyAddress: address,
-          timezone: timeZone,
-        }),
+        body: JSON.stringify(data)
       });
+  
       if (!response.ok) {
-        throw new Error('Failed to save settings');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to save settings');
       }
-      const data = await response.json();
-      console.log('Settings saved:', data);
+  
+      return await response.json();
     } catch (error) {
-      console.error('Error saving settings:', error);
+      console.error('Save error:', error);
+      setError(error.message);
+      throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleEditClick = () => {
-    setIsEditing(!isEditing);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await saveSettings(settings);
+      setIsEditing(false);
+      setError(null);
+    } catch (error) {
+      // Error is already handled in saveSettings
+    }
   };
 
-  const handleSaveClick = () => {
-    saveSettings(); // Save settings to the backend
-    setIsEditing(false);
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setSettings(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   return (
-    <div className={`${Set.settings} ${Set[theme]}`}>
+    <div className={Set.settings}>
       <h1 className={Set.title}>Settings</h1>
+      {error && <div className={Set.error}>{error}</div>}
 
-      <section className={Set.section}>
-        <h2>Company Information</h2>
-        <form>
+      <form onSubmit={handleSubmit}>
+        <div className={Set.section}>
+          <h2>Company Information</h2>
           <label className={Set.customlabel}>
             Company Name:
-            {isEditing ? (
-              <input
-                type="text"
-                value={companyName}
-                onChange={(e) => setCompanyName(e.target.value)}
-                className={Set.input}
-              />
-            ) : (
-              <div className={Set.input}>{companyName}</div>
-            )}
+            <input
+              type="text"
+              name="companyName"
+              value={settings.companyName}
+              onChange={handleChange}
+              className={Set.input}
+              required
+              disabled={!isEditing}
+            />
           </label>
           <label className={Set.customlabel}>
-            Address:
-            {isEditing ? (
-              <input
-                type="text"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                className={Set.input}
-              />
-            ) : (
-              <div className={Set.input}>{address}</div>
-            )}
+            Company Address:
+            <input
+              type="text"
+              name="companyAddress"
+              value={settings.companyAddress}
+              onChange={handleChange}
+              className={Set.input}
+              required
+              disabled={!isEditing}
+            />
           </label>
-        </form>
-      </section>
+        </div>
 
-      <section className={Set.section}>
-        <label className={Set.customlabel}>
-          Time Zone:
-          <select
-            value={timeZone}
-            onChange={(e) => setTimeZone(e.target.value)}
-            className={Set.select}
-            disabled={!isEditing}
-          >
-            <option value="UTC">UTC</option>
-            <option value="EST">EST</option>
-            <option value="PST">PST</option>
-          </select>
-        </label>
-      </section>
+        <div className={Set.section}>
+          <h2>Notification Preferences</h2>
+          <label className={Set.customlabel}>
+            Time Zone:
+            <select
+              name="timezone"
+              value={settings.timezone}
+              onChange={handleChange}
+              className={Set.select}
+              disabled={!isEditing}
+            >
+              <option value="UTC">UTC</option>
+              <option value="EST">EST</option>
+              <option value="PST">PST</option>
+            </select>
+          </label>
+        </div>
 
-      <button onClick={isEditing ? handleSaveClick : handleEditClick} className={Set.button}>
-        {isEditing ? 'Save' : 'Edit'}
-      </button>
+        <div className={Set.actions}>
+          {!isEditing ? (
+            <button 
+              type="button"
+              onClick={() => setIsEditing(true)}
+              className={Set.button}
+            >
+              Edit Settings
+            </button>
+          ) : (
+            <>
+              <button 
+                type="submit" 
+                className={`${Set.button} ${Set.primary}`}
+                disabled={isLoading}
+              >
+                {isLoading ? 'Saving...' : 'Save Changes'}
+              </button>
+              <button 
+                type="button"
+                onClick={() => {
+                  setIsEditing(false);
+                  fetchSettings(); // Reset form
+                }}
+                className={Set.button}
+              >
+                Cancel
+              </button>
+            </>
+          )}
+        </div>
+      </form>
     </div>
   );
 };

@@ -1,25 +1,49 @@
 import express from 'express';
-import cors from 'cors'; // Add this line
+import cors from 'cors';
+import settingsRouter from './routes/settingsRoutes.js'; // Fixed import
 import WebSocketServer from './websocket/websocketServer.js';
 import KafkaConsumer from './kafka/kafkaConsumer.js';
-import settingsRoutes from './routes/settingsRoutes.js';
-import searchRoutes from './routes/searchRoutes.js';
 import { PrismaClient } from '@prisma/client';
+// Change this import
+
 
 const prisma = new PrismaClient();
 const app = express();
 
-// Enable CORS for all routes
+// Middleware
 app.use(cors({
-  origin: 'http://localhost:5173', // Allow your frontend origin
-  methods: ['GET', 'POST', 'PUT'], // Allowed HTTP methods
-  credentials: true // Allow cookies (if needed)
+  origin: 'http://localhost:5173',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
 }));
 
-app.use(express.json());
-app.use('/settings', settingsRoutes);
-app.use('/api/search', searchRoutes);
-// Rest of your code...
+app.use(express.json());  // Keep only this one (removed bodyParser)
+app.use(express.urlencoded({ extended: true }));
+// Database connection check
+prisma.$connect()
+  .then(() => console.log('Connected to database'))
+  .catch(err => console.error('Database connection error:', err));
+
+// Routes
+app.use('/api', settingsRouter); // All settings routes will be prefixed with /api
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'OK' });
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ error: 'Internal server error' });
+});
+
+
+// Graceful shutdown
+process.on('SIGTERM', async () => {
+  await prisma.$disconnect();
+  process.exit(0);
+});
 
 // Initialize WebSocket server
 const webSocketServer = new WebSocketServer(8080);
@@ -27,112 +51,143 @@ const webSocketServer = new WebSocketServer(8080);
 // Initialize Kafka consumer
 const kafkaConsumer = new KafkaConsumer();
 
-// Function to save notification to the database using Prisma
-const saveNotificationToDatabase = async (notification) => {
-  const { type, orderId, message, timestamp } = notification;
+
+// ====================== NOTIFICATION PROCESSING ====================== //
+
+const processNotification = async (payload) => {
   try {
-    const savedNotification = await prisma.notification.create({
+    // Validate required fields
+    const requiredFields = ['service', 'event', 'message', 'data'];
+    const missingFields = requiredFields.filter(field => !payload[field]);
+    
+    if (missingFields.length > 0) {
+      console.error('Missing required fields:', missingFields);
+      return null;
+    }
+
+    // Determine notification type
+    const type = payload.service.replace('-service', '');
+
+    // Create notification record
+    const notification = await prisma.notification.create({
       data: {
+        service: payload.service,
+        event: payload.event,
         type,
-        orderId: orderId,
-        message,
-        timestamp: new Date(timestamp),
-      },
+        message: `${payload.service} - ${payload.event}: ${payload.message}`,
+        orderId: payload.data?.orderId || null,
+        metadata: payload.data ? JSON.stringify(payload.data) : null
+      }
     });
-    console.log('Notification saved to database:', savedNotification);
+
+    console.log(`Notification created: ${notification.id}`);
+    return notification;
+
   } catch (error) {
-    console.error('Error saving notification to database:', error);
+    console.error('Database error:', error);
+    
+    if (error.code === 'P2022') {
+      console.error('Database schema mismatch! Please run migrations.');
+      console.error('Missing column:', error.meta.column);
+    }
+    
+    return null;
   }
 };
 
-// Start Kafka consumer
+// ====================== KAFKA CONSUMER ====================== //
+
 const startKafkaConsumer = async () => {
   try {
     await kafkaConsumer.connect();
 
-    // Subscribe to relevant topics
     const topics = [
-      'order-events',       // Sales Order events
-      'shipment-events',   // Shipment events
-      'invoice-events',    // Invoice events
-      'payment-events',    // Payment events
-      'delivery-events',   // Delivery Vehicle events
-      'inventory-events'   // Inventory events
+      'order-events',
+      'shipment-events',
+      'invoice-events',
+      'payment-events',
+      'vehicle-events',
+      'inventory-events'
     ];
 
     await kafkaConsumer.subscribe(topics);
 
-    // Run Kafka consumer with a callback to handle messages
-    await kafkaConsumer.run(({ topic, partition, message }) => {
+    await kafkaConsumer.run(async ({ topic, partition, message }) => {
       try {
         const payload = JSON.parse(message.value.toString());
-        console.log('Received Kafka message:', payload);
+        console.log(`\n=== Received ${topic} event ===`);
+        console.log('Full message:', payload);
 
-        // Validate the message
-        if (!payload.service || !payload.event || !payload.message || !payload.data) {
-          console.error('Invalid message format:', payload);
-          return;
+        const notification = await processNotification(payload);
+        
+        if (notification) {
+          webSocketServer.broadcastNotification({
+            id: notification.id,
+            type: notification.type,
+            service: notification.service,
+            event: notification.event,
+            message: notification.message,
+            timestamp: notification.timestamp,
+            metadata: JSON.parse(notification.metadata)
+          });
         }
-
-        const { service, event, message: eventMessage, data } = payload;
-
-        // Derive the type from the event
-        const type = event; // Use the event as the type
-
-        console.log(`Received event: ${event} from ${service}`);
-
-        // Create a notification object
-        const notification = {
-          type,
-          orderId: data?.orderId || 'N/A',
-          message: eventMessage,
-          timestamp: new Date().toISOString(),
-        };
-
-        // Save the notification to the database
-        saveNotificationToDatabase(notification);
-
-        // Broadcast the Kafka message to WebSocket clients
-        webSocketServer.broadcastNotification(notification);
       } catch (error) {
         console.error('Error processing Kafka message:', error);
       }
     });
 
-    console.log('Kafka consumer started successfully');
+    console.log('Kafka consumer started successfully. Listening to:');
+    topics.forEach(topic => console.log(`- ${topic}`));
+
   } catch (error) {
     console.error('Error starting Kafka consumer:', error);
-    process.exit(1); // Exit the process if Kafka consumer fails
+    process.exit(1);
   }
 };
 
+// ====================== SERVER STARTUP ====================== //
+
+// Start services
 startKafkaConsumer();
 
-// Start Express server
 const PORT = process.env.PORT || 4000;
 const server = app.listen(PORT, () => {
   console.log(`Notification Service running on port ${PORT}`);
+  console.log(`Available endpoints:
+  - GET  /api/settings
+  - POST  /api/settings
+  - WS   :8080 (WebSocket)`);
 }).on('error', (err) => {
   if (err.code === 'EADDRINUSE') {
-    console.error(`Port ${PORT} is already in use. Please free the port or use a different port.`);
+    console.error(`Port ${PORT} is already in use.`);
   } else {
     console.error('Server error:', err);
   }
 });
 
-// Graceful shutdown
+// ====================== GRACEFUL SHUTDOWN ====================== //
+
 const shutdown = async (signal) => {
-  console.log(`${signal} signal received. Shutting down gracefully...`);
+  console.log(`\n${signal} signal received. Shutting down gracefully...`);
+  
   try {
+    console.log('Disconnecting Kafka consumer...');
     await kafkaConsumer.disconnect();
+    
+    console.log('Closing WebSocket server...');
     webSocketServer.close();
-    await prisma.$disconnect(); // Disconnect Prisma Client
+    
+    console.log('Disconnecting Prisma client...');
+    await prisma.$disconnect();
+    
+    console.log('Closing HTTP server...');
     server.close(() => {
-      console.log('Server closed');
+      console.log('Server successfully shut down');
       process.exit(0);
     });
+    
   } catch (error) {
-    console.error('Error during shutdown:', error);
+    console.error('Shutdown error:', error);
     process.exit(1);
   }
 };

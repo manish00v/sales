@@ -1,5 +1,5 @@
 
-import React, { useContext, useEffect } from "react";
+import { useContext, useEffect } from "react";
 import { FormPageHeaderContext } from "../../../../contexts/FormPageHeaderContext";
 import FormPageHeader from "../../../../components/Layout/FormPageHeader/FormPageHeader";
 import CreateReturnLineItemsForm from "./CreateReturnLineItemsForm";
@@ -11,7 +11,7 @@ const CreateReturnLineItemsPage = () => {
 		setBtn("Create");
 		setUrl("/returnlineitems");
 		setGoBackUrl("/returnlineitems");
-	}, []);
+	});
 
 	return (
 		<>

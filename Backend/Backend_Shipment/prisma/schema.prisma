@@ -1,0 +1,89 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Shipment {
+  shipmentId            String         @id @unique
+  orderId               String
+  trackingNumber        Int            @unique
+  shipmentStatus        ShipmentStatus
+  dispatchDate          DateTime
+  estimatedDeliveryDate DateTime
+
+  carriers         Carrier[] // One shipment can have multiple carriers
+  deliveryRoutes   DeliveryRoute[] // One shipment can have multiple delivery routes
+  deliveryVehicles DeliveryVehicle[] // One shipment can have multiple delivery vehicles
+}
+
+enum ShipmentStatus {
+  PENDING
+  DISPATCHED
+  IN_TRANSIT
+  DELIVERED
+  CANCELLED
+}
+
+model Carrier {
+  carrierId String @id @unique
+  orderId   String
+
+  name           String
+  serviceType    ServiceType
+  contactDetails String
+  costStructure  Int
+
+  shipment   Shipment @relation(fields: [shipmentId], references: [shipmentId])
+  shipmentId String // Foreign key to Shipment
+
+  deliveryRoutes   DeliveryRoute[] // One carrier can be associated with multiple delivery routes
+  deliveryVehicles DeliveryVehicle[] // One carrier can have multiple delivery vehicles
+}
+
+enum ServiceType {
+  Standard_Shipping
+  Express_Shipping
+  Same_Day_Delivery
+  Overnight_Shipping
+  Two_Day_Shipping
+  International_Shipping
+}
+
+model DeliveryRoute {
+  routeId             String @id @unique
+  orderId             String
+  sourceLocation      String
+  destinationLocation String
+  routeTime           String
+  distance            Int
+
+  shipment   Shipment @relation(fields: [shipmentId], references: [shipmentId]) // Foreign key to Shipment
+  shipmentId String // Foreign key
+
+  carrier   Carrier @relation(fields: [carrierId], references: [carrierId]) // Foreign key to Carrier
+  carrierId String // Foreign key
+}
+
+model DeliveryVehicle {
+  vehicleId       String @id @unique
+  orderId         String
+  vehicleType     String
+  vehicleCapacity Int
+  assignedDriver  String
+
+  shipment   Shipment @relation(fields: [shipmentId], references: [shipmentId]) // Foreign key to Shipment
+  shipmentId String // Foreign key
+
+  carrier   Carrier @relation(fields: [carrierId], references: [carrierId]) // Foreign key to Carrier
+  carrierId String // Foreign key
+}
