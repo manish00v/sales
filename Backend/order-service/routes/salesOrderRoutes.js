@@ -24,7 +24,7 @@ router.post(
       body('orderId').isString().isLength({ max: 20 }),
       body('orderDate').isISO8601(),
       body('requiredDate').isISO8601(),
-      body('orderStatus').isString().isLength({ max: 50 }),
+      // body('orderStatus').isString().isLength({ max: 50 }),
       body('paymentStatus').isString().isLength({ max: 50 }),
       body('deliveryBlock').isString().isLength({ max: 20 }),
       body('totalAmount').isDecimal({ decimal_digits: '0,2' }),
@@ -57,7 +57,7 @@ router.put(
       body('orderDate').optional().isISO8601(),
       body('requiredDate').optional().isISO8601(),
       body('customerId').optional().isString(), // Validate customerId as an integer
-      body('orderStatus').optional().isString().isLength({ max: 50 }),
+      // body('orderStatus').optional().isString().isLength({ max: 50 }),
       body('paymentStatus').optional().isString().isLength({ max: 50 }),
       body('deliveryBlock').optional().isString().isLength({max: 20}),
       body('totalAmount').optional().isDecimal({ decimal_digits: '0,2' }),

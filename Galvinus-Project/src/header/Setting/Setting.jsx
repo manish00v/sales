@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Set from './Setting.module.css';
 
 const API_BASE_URL = 'http://localhost:4000/api';
 
-const Settings = () => {
+const Settings = ({ isOpen, onClose }) => {
   const [settings, setSettings] = useState({
     companyName: '',
     companyAddress: '',
@@ -12,10 +12,30 @@ const Settings = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const popupRef = useRef(null);
 
   useEffect(() => {
-    fetchSettings();
-  }, []);
+    if (isOpen) {
+      fetchSettings();
+    }
+  }, [isOpen]);
+
+  // Close popup when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (popupRef.current && !popupRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen, onClose]);
 
   const fetchSettings = async () => {
     try {
@@ -81,90 +101,98 @@ const Settings = () => {
     }));
   };
 
+  if (!isOpen) return null;
+
   return (
-    <div className={Set.settings}>
-      <h1 className={Set.title}>Settings</h1>
-      {error && <div className={Set.error}>{error}</div>}
-
-      <form onSubmit={handleSubmit}>
-        <div className={Set.section}>
-          <h2>Company Information</h2>
-          <label className={Set.customlabel}>
-            Company Name:
-            <input
-              type="text"
-              name="companyName"
-              value={settings.companyName}
-              onChange={handleChange}
-              className={Set.input}
-              required
-              disabled={!isEditing}
-            />
-          </label>
-          <label className={Set.customlabel}>
-            Company Address:
-            <input
-              type="text"
-              name="companyAddress"
-              value={settings.companyAddress}
-              onChange={handleChange}
-              className={Set.input}
-              required
-              disabled={!isEditing}
-            />
-          </label>
+    <div className={Set.overlay}>
+      <div className={Set.settings} ref={popupRef}>
+        <div className={Set.header}>
+          <h1 className={Set.title}>Settings</h1>
+          <button className={Set.closeButton} onClick={onClose}>&times;</button>
         </div>
+        
+        {error && <div className={Set.error}>{error}</div>}
 
-        <div className={Set.section}>
-          <h2>Notification Preferences</h2>
-          <label className={Set.customlabel}>
-            Time Zone:
-            <select
-              name="timezone"
-              value={settings.timezone}
-              onChange={handleChange}
-              className={Set.select}
-              disabled={!isEditing}
-            >
-              <option value="UTC">UTC</option>
-              <option value="EST">EST</option>
-              <option value="PST">PST</option>
-            </select>
-          </label>
-        </div>
+        <form onSubmit={handleSubmit}>
+          <div className={Set.section}>
+            <h2>Company Information</h2>
+            <label className={Set.customlabel}>
+              Company Name:
+              <input
+                type="text"
+                name="companyName"
+                value={settings.companyName}
+                onChange={handleChange}
+                className={Set.input}
+                required
+                disabled={!isEditing}
+              />
+            </label>
+            <label className={Set.customlabel}>
+              Company Address:
+              <input
+                type="text"
+                name="companyAddress"
+                value={settings.companyAddress}
+                onChange={handleChange}
+                className={Set.input}
+                required
+                disabled={!isEditing}
+              />
+            </label>
+          </div>
 
-        <div className={Set.actions}>
-          {!isEditing ? (
-            <button 
-              type="button"
-              onClick={() => setIsEditing(true)}
-              className={Set.button}
-            >
-              Edit Settings
-            </button>
-          ) : (
-            <>
-              <button 
-                type="submit" 
-                className={`${Set.button} ${Set.primary}`}
-                disabled={isLoading}
+          <div className={Set.section}>
+            <h2>Notification Preferences</h2>
+            <label className={Set.customlabel}>
+              Time Zone:
+              <select
+                name="timezone"
+                value={settings.timezone}
+                onChange={handleChange}
+                className={Set.select}
+                disabled={!isEditing}
               >
-                {isLoading ? 'Saving...' : 'Save Changes'}
-              </button>
+                <option value="UTC">UTC</option>
+                <option value="EST">EST</option>
+                <option value="PST">PST</option>
+              </select>
+            </label>
+          </div>
+
+          <div className={Set.actions}>
+            {!isEditing ? (
               <button 
                 type="button"
-                onClick={() => {
-                  setIsEditing(false);
-                  fetchSettings(); // Reset form
-                }}
+                onClick={() => setIsEditing(true)}
                 className={Set.button}
               >
-                Cancel
+                Edit Settings
               </button>
-            </>
-          )}
-        </div>
-      </form>
+            ) : (
+              <>
+                <button 
+                  type="submit" 
+                  className={`${Set.button} ${Set.primary}`}
+                  disabled={isLoading}
+                >
+                  {isLoading ? 'Saving...' : 'Save Changes'}
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => {
+                    setIsEditing(false);
+                    fetchSettings(); // Reset form
+                  }}
+                  className={Set.button}
+                >
+                  Cancel
+                </button>
+              </>
+            )}
+          </div>
+        </form>
+      </div>
     </div>
   );
 };

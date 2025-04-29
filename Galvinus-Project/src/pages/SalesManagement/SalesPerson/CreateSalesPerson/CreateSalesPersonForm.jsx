@@ -4,9 +4,9 @@ import "../../../../components/Layout/Styles/BoxFormStyles.css";
 export default function CreateSalesPersonForm() {
     const [formData, setFormData] = useState({
         salesPersonId: "",
-        customerId: "",
+        // customerId: "",
         orderId: "",
-        productId: "",
+        // productId: "",
         salesPersonName: "",
         emailId: "",
         phoneNumber: "",
@@ -58,9 +58,9 @@ export default function CreateSalesPersonForm() {
             const formattedData = {
                 ...formData,
                 salesPersonId: formData.salesPersonId,
-                customerId: formData.customerId,
+                // customerId: formData.customerId,
                 orderId: formData.orderId,
-                productId: formData.productId,
+                // productId: formData.productId,
             };
 
             // Submit the sales person data
@@ -111,7 +111,7 @@ export default function CreateSalesPersonForm() {
                                 />
                             </div>
 
-                            <div className="data">
+                            {/* <div className="data">
                                 <label htmlFor="customerId">Customer ID</label>
                                 <input
                                     type="text"
@@ -121,7 +121,7 @@ export default function CreateSalesPersonForm() {
                                     onChange={handleChange}
                                     required
                                 />
-                            </div>
+                            </div> */}
 
                             <div className="data">
                                 <label htmlFor="orderId">Order ID</label>
@@ -135,7 +135,7 @@ export default function CreateSalesPersonForm() {
                                 />
                             </div>
 
-                            <div className="data">
+                            {/* <div className="data">
                                 <label htmlFor="productId">Product ID</label>
                                 <input
                                     type="text"
@@ -145,7 +145,7 @@ export default function CreateSalesPersonForm() {
                                     onChange={handleChange}
                                     required
                                 />
-                            </div>
+                            </div> */}
                         </div>
                     </div>
 

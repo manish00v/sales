@@ -67,7 +67,7 @@ const Sidebar = () => {
                       Sales Order
                     </Link>
                   </li>
-                  <li>
+                  {/* <li>
                     <Link
                       to="/lineitems"
                       onClick={() =>
@@ -79,7 +79,7 @@ const Sidebar = () => {
                       <i className="fas fa-tag icon-pricing"></i>
                       Line Items
                     </Link>
-                  </li>
+                  </li> */}
                   <li>
                     <Link
                       to="/customer"

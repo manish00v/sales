@@ -4,6 +4,10 @@ import settingsRouter from './routes/settingsRoutes.js'; // Fixed import
 import WebSocketServer from './websocket/websocketServer.js';
 import KafkaConsumer from './kafka/kafkaConsumer.js';
 import { PrismaClient } from '@prisma/client';
+import elasticsearchService from './services/elasticsearchService.js';
+import searchRouter from './routes/searchRoutes.js'
+// Add this at the top with your other imports
+import { elasticClient } from './config/elasticsearch.js';
 // Change this import
 
 
@@ -11,45 +15,111 @@ const prisma = new PrismaClient();
 const app = express();
 
 // Middleware
+// ====================== MIDDLEWARE SETUP ====================== //
+
+// CORS Configuration
 app.use(cors({
   origin: 'http://localhost:5173',
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true
 }));
 
-app.use(express.json());  // Keep only this one (removed bodyParser)
-app.use(express.urlencoded({ extended: true }));
-// Database connection check
-prisma.$connect()
-  .then(() => console.log('Connected to database'))
-  .catch(err => console.error('Database connection error:', err));
+// Enhanced JSON Middleware with error handling
+app.use(express.json({
+  verify: (req, res, buf) => {
+    req.rawBody = buf.toString();
+    try {
+      JSON.parse(req.rawBody);
+    } catch (e) {
+      console.error('Invalid JSON payload:', req.rawBody);
+      res.status(400).json({ 
+        error: 'Invalid JSON payload',
+        received: req.rawBody.length > 100 ? 
+          req.rawBody.substring(0, 100) + '...' : 
+          req.rawBody
+      });
+      throw new Error('Invalid JSON');
+    }
+  },
+  limit: '10mb'
+}));
 
-// Routes
-app.use('/api', settingsRouter); // All settings routes will be prefixed with /api
+// URL-encoded Middleware
+app.use(express.urlencoded({ extended: true }));
+
+// ====================== DATABASE & SERVICES INITIALIZATION ====================== //
+
+// Database connection
+prisma.$connect()
+  .then(() => console.log('✅ Connected to database'))
+  .catch(err => console.error('❌ Database connection error:', err));
+
+// Elasticsearch initialization
+const initializeElasticsearch = async () => {
+  try {
+    const { body } = await elasticClient.ping();
+    if (!body) {
+      throw new Error('Empty response from Elasticsearch');
+    }
+    console.log('✅ Elasticsearch connected successfully');
+    
+    // Initialize indices
+    await elasticsearchService.initializeIndices();
+    console.log('✅ Elasticsearch indices initialized');
+    
+    // Verify basic operations
+    const indices = await elasticClient.cat.indices({ format: 'json' });
+    console.log(`ℹ️ Available indices: ${indices.body.length}`);
+  } catch (error) {
+    console.error('❌ Elasticsearch initialization error:', error.message);
+    console.log('🔍 Troubleshooting steps:');
+    console.log('1. Ensure Elasticsearch is running: http://localhost:9200');
+    console.log('2. Verify credentials (default: elastic/changeme)');
+    console.log('3. Check if port 9200 is accessible');
+    console.log('4. Try disabling security in elasticsearch.yml:');
+    console.log('   xpack.security.enabled: false');
+  }
+};
+
+initializeElasticsearch();
+
+// ====================== ROUTES ====================== //
+
+app.use('/api', settingsRouter);
+app.use('/api/search', searchRouter);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'OK' });
+  res.status(200).json({ 
+    status: 'OK',
+    services: {
+      database: true,
+      elasticsearch: elasticClient ? true : false,
+      kafka: true
+    }
+  });
 });
 
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ error: 'Internal server error' });
+  res.status(500).json({ 
+    error: 'Internal server error',
+    ...(process.env.NODE_ENV === 'development' && {
+      message: err.message,
+      stack: err.stack
+    })
+  });
 });
 
-
-// Graceful shutdown
-process.on('SIGTERM', async () => {
-  await prisma.$disconnect();
-  process.exit(0);
-});
+// ====================== SERVICE INITIALIZATION ====================== //
 
 // Initialize WebSocket server
 const webSocketServer = new WebSocketServer(8080);
 
 // Initialize Kafka consumer
 const kafkaConsumer = new KafkaConsumer();
+
 
 
 // ====================== NOTIFICATION PROCESSING ====================== //
