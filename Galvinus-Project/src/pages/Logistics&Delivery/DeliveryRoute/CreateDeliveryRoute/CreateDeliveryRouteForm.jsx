@@ -1,145 +1,232 @@
 import React, { useState } from "react";
 import "../../../../components/Layout/Styles/BoxFormStyles.css";
+import { useNavigate } from "react-router-dom";
 
 export default function CreateDeliveryRouteForm() {
-	const [formData, setFormData] = useState({
-		customerId: "",
-		orderId: "",
-		productId: "",
-		orderDate: "",
-		requiredDate: "",
-		deliveryBlock: "",
-		orderStatus: "pending",
-		paymentStatus: "unpaid",
-		total: "",
-	});
+  const token = localStorage.getItem("accessToken");
+  const navigate = useNavigate();
 
-	const handleChange = (e) => {
-		const { name, value } = e.target;
-		setFormData((prevData) => ({
-			...prevData,
-			[name]: value,
-		}));
-	};
+  const [formData, setFormData] = useState({
+    routeId: "",
+    orderId: "",
+    sourceLocation: "",
+    destinationLocation: "",
+    routeTime: "",
+    distance: "",
+    shipmentId: "",
+    carrierId: "",
+  });
 
-	return (
-		<div className="container">
-			<div className="form-container">
-				<h2>Create Delivery Route</h2>
+  const [errors, setErrors] = useState({ distance: "" });
 
-				<form>
-					{/* Header Box */}
-					<div className="header-box">
-						<h2>Header</h2>
+  const alphanumericRegex = /^[a-zA-Z0-9]+$/;
 
-						<div className="data-container">
-							<div className="data">
-								<label htmlFor="routeId">Route ID</label>
-								<input
-									type="text"
-									id="routeId"
-									name="routeId"
-									placeholder="(Primary Key)"
-									value={formData.customerId}
-									onChange={handleChange}
-									required
-								/>
-							</div>
+  const handleChange = (e) => {
+    const { name, value } = e.target;
 
-							<div className="data">
-								<label htmlFor="shipmentId">Shipment ID</label>
-								<input
-									type="text"
-									id="shipmentId"
-									name="shipmentId"
-									value={formData.orderId}
-									onChange={handleChange}
-									required
-								/>
-							</div>
+    if (["routeId", "shipmentId", "orderId", "carrierId"].includes(name)) {
+      if (!alphanumericRegex.test(value) && value !== "") {
+        return;
+      }
+    }
 
-							<div className="data">
-								<label htmlFor="orderId">Order ID</label>
-								<input
-									type="text"
-									id="orderId"
-									name="orderId"
-									value={formData.orderId}
-									onChange={handleChange}
-									required
-								/>
-							</div>
+    if (name === "distance") {
+      if (!/^\d*$/.test(value)) {
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          distance: "Distance must be a valid number.",
+        }));
+      } else {
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          distance: "",
+        }));
+      }
+    }
 
-							<div className="data">
-								<label htmlFor="carrierId">Carrier ID</label>
-								<input
-									type="text"
-									id="carrierId"
-									name="carrierId"
-									value={formData.orderId}
-									onChange={handleChange}
-									required
-								/>
-							</div>
-						</div>
-					</div>
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
 
-					{/* Item Box */}
-					<div className="item-box">
-						<h2>Item</h2>
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-						<div className="data-container">
-							<div className="data">
-								<label htmlFor="sourceLocation">Source Location</label>
-								<input
-									type="text"
-									id="sourceLocation"
-									name="sourceLocation"
-									value={formData.orderDate}
-									onChange={handleChange}
-									required
-								/>
-							</div>
+    if (errors.distance) {
+      alert("Please correct the errors before submitting.");
+      return;
+    }
 
-							<div className="data">
-								<label htmlFor="destinationLocation">Destination Location</label>
-								<input
-									type="text"
-									id="destinationLocation"
-									name="destinationLocation"
-									value={formData.requiredDate}
-									onChange={handleChange}
-									required
-								/>
-							</div>
+    const payload = {
+      ...formData,
+      distance: Number(formData.distance) || 0,
+    };
 
-							<div className="data">
-								<label htmlFor="routeTime">Route Time</label>
-								<input
-									type="time"
-									id="routeTime"
-									name="routeTime"
-									value={formData.deliveryBlock}
-									onChange={handleChange}
-									required
-								/>
-							</div>
+    try {
+      const response = await fetch(
+        "http://localhost:6744/api/vehicleRoute/create-vehicleRoute",
+        {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+      const data = await response.json();
 
-							<div className="data">
-								<label htmlFor="distance">Distance</label>
-								<input
-									type="text"
-									id="distance"
-									name="distance"
-									value={formData.deliveryBlock}
-									onChange={handleChange}
-									required
-								/>
-							</div>
-						</div>
-					</div>
-				</form>
-			</div>
-		</div>
-	);
+      if (response.ok) {
+        console.log(data);
+        setFormData({
+          routeId: "",
+          orderId: "",
+          sourceLocation: "",
+          destinationLocation: "",
+          routeTime: "",
+          distance: "",
+          shipmentId: "",
+          carrierId: "",
+        });
+        navigate("/deliveryroute");
+      } else {
+        console.log(data.error);
+        alert(data.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  return (
+    <div className="container">
+      <div className="form-container">
+        <h2>Create Delivery Route</h2>
+
+        <form onSubmit={handleSubmit}>
+          {/* Header Box */}
+          <div className="header-box">
+            <h2>Header</h2>
+            <div className="data-container">
+              <div className="data">
+                <label htmlFor="routeId">Route ID</label>
+                <input
+                  type="text"
+                  id="routeId"
+                  name="routeId"
+                  placeholder="(Primary Key)"
+                  value={formData.routeId}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              <div className="data">
+                <label htmlFor="shipmentId">Shipment ID</label>
+                <input
+                  type="text"
+                  id="shipmentId"
+                  name="shipmentId"
+                  value={formData.shipmentId}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              <div className="data">
+                <label htmlFor="orderId">Order ID</label>
+                <input
+                  type="text"
+                  id="orderId"
+                  name="orderId"
+                  value={formData.orderId}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              <div className="data">
+                <label htmlFor="carrierId">Carrier ID</label>
+                <input
+                  type="text"
+                  id="carrierId"
+                  name="carrierId"
+                  value={formData.carrierId}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Item Box */}
+          <div className="item-box">
+            <h2>Item</h2>
+
+            <div className="data-container">
+              <div className="data">
+                <label htmlFor="sourceLocation">Source Location</label>
+                <input
+                  type="text"
+                  id="sourceLocation"
+                  name="sourceLocation"
+                  value={formData.sourceLocation}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              <div className="data">
+                <label htmlFor="destinationLocation">
+                  Destination Location
+                </label>
+                <input
+                  type="text"
+                  id="destinationLocation"
+                  name="destinationLocation"
+                  value={formData.destinationLocation}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              <div className="data">
+                <label htmlFor="routeTime">Route Time</label>
+                <input
+                  type="text"
+                  id="routeTime"
+                  name="routeTime"
+                  value={formData.routeTime}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              <div className="data">
+                <label htmlFor="distance">Distance</label>
+                <input
+                  type="text"
+                  id="distance"
+                  name="distance"
+                  value={formData.distance}
+                  onChange={handleChange}
+                  required
+                />
+                {errors.distance && <p className="error">{errors.distance}</p>}
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            className="submit-btn"
+            disabled={!!errors.distance}
+          >
+            Submit
+          </button>
+        </form>
+      </div>
+    </div>
+  );
 }

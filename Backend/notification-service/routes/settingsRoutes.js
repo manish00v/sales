@@ -2,11 +2,12 @@ import express from 'express';
 import SettingsController from '../controllers/settingsController.js';
 
 const router = express.Router();
-const settingsController = new SettingsController();
+const controller = new SettingsController();
 
-// Corrected paths (use "/" instead of "/settings")
-router.get('/', (req, res) => settingsController.getSettings(req, res));
-router.post('/', (req, res) => settingsController.createSettings(req, res));
-router.put('/', settingsController.updateSettings.bind(settingsController));
+// GET /api/settings
+router.get('/settings', controller.getSettings.bind(controller));
+
+// POST /api/settings
+router.post('/settings', controller.createOrUpdateSettings.bind(controller));
 
 export default router;

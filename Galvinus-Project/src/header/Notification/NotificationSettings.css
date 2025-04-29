@@ -1,4 +1,4 @@
-/* Container styling */
+/* Main Container */
 .notification-settings-container {
   width: 373px;
   padding: 30px;
@@ -6,87 +6,161 @@
   position: absolute;
   right: 0;
   background-color: white;
+  /* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); */
+  /* border-radius: 8px; */
+  max-height: 80vh;
+  overflow-y: auto;
 }
 
-/* Title styling */
+/* Title */
 .notification-settings-title {
   font-size: 1.8rem;
   color: #000000;
   margin-bottom: 20px;
   text-align: start;
+  font-weight: 600;
 }
 
-/* Status text styling */
-.notification-settings-status {
+/* Status Indicator */
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
   font-size: 1rem;
   color: #333333;
-  margin-bottom: 20px;
 }
 
-/* Buttons container styling */
-.notification-settings-buttons {
-  margin-bottom: 20px;
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
 }
 
-/* Button styling */
-.notification-settings-button {
-  padding: 12px 25px;
+.status-dot.online {
+  background-color: #4CAF50;
+}
+
+.status-dot.offline {
+  background-color: #F44336;
+}
+
+/* Test Button */
+.refresh-button {
+  padding: 8px 16px;
   background-color: #4f46e5;
-  color: #ffffff;
+  color: white;
   border: none;
   border-radius: 6px;
-  font-size: 1rem;
+  font-size: 0.9rem;
   cursor: pointer;
   transition: background-color 0.3s ease;
-  margin-right: 10px;
+  margin-left: 20px;
 }
 
-.notification-settings-button:hover {
+.refresh-button:hover {
   background-color: #7671cc;
 }
 
-/* Notifications list styling */
-.notification-settings-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+/* Notification List */
+.notification-list {
+  margin-top: 20px;
 }
 
-/* Notification item styling */
-.notification-settings-item {
-  padding: 10px;
-  margin-bottom: 10px;
-  border: 1px solid #ccc;
+.empty-state {
+  color: #666;
+  font-style: italic;
+  text-align: center;
+  padding: 20px 0;
+}
+
+/* Notification Items */
+.notification-item {
+  padding: 15px;
+  margin-bottom: 12px;
   border-radius: 6px;
   cursor: pointer;
-  font-size: 1rem;
-  color: #333333;
+  transition: all 0.2s ease;
 }
 
-.notification-settings-item-unread {
+.notification-item.unread {
   background-color: #e3f2fd;
+  border-left: 4px solid #4f46e5;
 }
 
-.notification-settings-item-read {
+.notification-item.read {
   background-color: #f9f9f9;
+  border-left: 4px solid #ccc;
 }
 
-/* Notification history title styling */
-.notification-settings-history-title {
-  font-size: 1.5rem;
-  color: #000000;
-  margin-bottom: 10px;
-  border-bottom: 2px solid #4f46e5;
-  padding-bottom: 10px;
+.notification-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* Notification history item styling */
-.notification-settings-history-item {
-  padding: 10px;
-  margin-bottom: 10px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  background-color: #f9f9f9;
-  font-size: 1rem;
-  color: #333333;
+/* Notification Header */
+.notification-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+}
+
+.notification-service {
+  font-weight: bold;
+  color: #4f46e5;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.notification-time {
+  color: #666;
+}
+
+/* Notification Content */
+.notification-type {
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: #333;
+  text-transform: capitalize;
+}
+
+.notification-message {
+  color: #444;
+  margin-bottom: 5px;
+  line-height: 1.4;
+}
+
+.order-id {
+  font-size: 0.8rem;
+  color: #666;
+  font-style: italic;
+}
+
+.test-notification-button {
+  margin-left: 20px;
+  padding: 6px 12px;
+  background-color: #4f46e5;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.test-notification-button:hover {
+  background-color: #4338ca;
+}
+
+/* Error handling for timestamps */
+.notification-time {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+/* Fallback styles for missing data */
+.notification-service[data-missing="true"],
+.notification-type[data-missing="true"] {
+  color: #999;
+  font-style: italic;
 }

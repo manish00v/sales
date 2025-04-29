@@ -1,122 +1,198 @@
-import { useState, useEffect } from 'react';
-import Set from './Setting.module.css'; // Import the CSS module
+import { useState, useEffect, useRef } from 'react';
+import Set from './Setting.module.css';
 
-const Settings = () => {
-  const [timeZone, setTimeZone] = useState('UTC');
-  const [theme] = useState('light');
+const API_BASE_URL = 'http://localhost:4000/api';
+
+const Settings = ({ isOpen, onClose }) => {
+  const [settings, setSettings] = useState({
+    companyName: '',
+    companyAddress: '',
+    timezone: 'UTC'
+  });
   const [isEditing, setIsEditing] = useState(false);
-  const [companyName, setCompanyName] = useState('');
-  const [address, setAddress] = useState('');
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const popupRef = useRef(null);
 
-  // Fetch settings when the component mounts
   useEffect(() => {
-    fetchSettings();
-  }, []);
+    if (isOpen) {
+      fetchSettings();
+    }
+  }, [isOpen]);
 
-  // Fetch current settings from the backend
+  // Close popup when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (popupRef.current && !popupRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen, onClose]);
+
   const fetchSettings = async () => {
     try {
-      const response = await fetch('http://localhost:4000/settings');
+      setIsLoading(true);
+      const response = await fetch(`${API_BASE_URL}/settings`);
+      
       if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+        throw new Error(`Failed to fetch settings: ${response.status}`);
       }
+      
       const data = await response.json();
-      setCompanyName(data.companyName || '');
-      setAddress(data.companyAddress || '');
-      setTimeZone(data.timezone || 'UTC');
+      setSettings(data);
     } catch (error) {
-      console.error('Error fetching settings:', error.message);
+      console.error('Fetch error:', error);
+      setError(error.message);
+    } finally {
+      setIsLoading(false);
     }
   };
-
-  // Save updated settings to the backend
-  const saveSettings = async () => {
+  
+  const saveSettings = async (data) => {
     try {
-      const response = await fetch('http://localhost:4000/settings', {
-        method: 'PUT',
+      setIsLoading(true);
+      const response = await fetch(`${API_BASE_URL}/settings`, {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          companyName,
-          companyAddress: address,
-          timezone: timeZone,
-        }),
+        body: JSON.stringify(data)
       });
+  
       if (!response.ok) {
-        throw new Error('Failed to save settings');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to save settings');
       }
-      const data = await response.json();
-      console.log('Settings saved:', data);
+  
+      return await response.json();
     } catch (error) {
-      console.error('Error saving settings:', error);
+      console.error('Save error:', error);
+      setError(error.message);
+      throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleEditClick = () => {
-    setIsEditing(!isEditing);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await saveSettings(settings);
+      setIsEditing(false);
+      setError(null);
+    } catch (error) {
+      // Error is already handled in saveSettings
+    }
   };
 
-  const handleSaveClick = () => {
-    saveSettings(); // Save settings to the backend
-    setIsEditing(false);
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setSettings(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
+
+  if (!isOpen) return null;
 
   return (
-    <div className={`${Set.settings} ${Set[theme]}`}>
-      <h1 className={Set.title}>Settings</h1>
+    <div className={Set.overlay}>
+      <div className={Set.settings} ref={popupRef}>
+        <div className={Set.header}>
+          <h1 className={Set.title}>Settings</h1>
+          <button className={Set.closeButton} onClick={onClose}>&times;</button>
+        </div>
+        
+        {error && <div className={Set.error}>{error}</div>}
 
-      <section className={Set.section}>
-        <h2>Company Information</h2>
-        <form>
-          <label className={Set.customlabel}>
-            Company Name:
-            {isEditing ? (
+        <form onSubmit={handleSubmit}>
+          <div className={Set.section}>
+            <h2>Company Information</h2>
+            <label className={Set.customlabel}>
+              Company Name:
               <input
                 type="text"
-                value={companyName}
-                onChange={(e) => setCompanyName(e.target.value)}
+                name="companyName"
+                value={settings.companyName}
+                onChange={handleChange}
                 className={Set.input}
+                required
+                disabled={!isEditing}
               />
-            ) : (
-              <div className={Set.input}>{companyName}</div>
-            )}
-          </label>
-          <label className={Set.customlabel}>
-            Address:
-            {isEditing ? (
+            </label>
+            <label className={Set.customlabel}>
+              Company Address:
               <input
                 type="text"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
+                name="companyAddress"
+                value={settings.companyAddress}
+                onChange={handleChange}
                 className={Set.input}
+                required
+                disabled={!isEditing}
               />
+            </label>
+          </div>
+
+          <div className={Set.section}>
+            <h2>Notification Preferences</h2>
+            <label className={Set.customlabel}>
+              Time Zone:
+              <select
+                name="timezone"
+                value={settings.timezone}
+                onChange={handleChange}
+                className={Set.select}
+                disabled={!isEditing}
+              >
+                <option value="UTC">UTC</option>
+                <option value="EST">EST</option>
+                <option value="PST">PST</option>
+              </select>
+            </label>
+          </div>
+
+          <div className={Set.actions}>
+            {!isEditing ? (
+              <button 
+                type="button"
+                onClick={() => setIsEditing(true)}
+                className={Set.button}
+              >
+                Edit Settings
+              </button>
             ) : (
-              <div className={Set.input}>{address}</div>
+              <>
+                <button 
+                  type="submit" 
+                  className={`${Set.button} ${Set.primary}`}
+                  disabled={isLoading}
+                >
+                  {isLoading ? 'Saving...' : 'Save Changes'}
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => {
+                    setIsEditing(false);
+                    fetchSettings(); // Reset form
+                  }}
+                  className={Set.button}
+                >
+                  Cancel
+                </button>
+              </>
             )}
-          </label>
+          </div>
         </form>
-      </section>
-
-      <section className={Set.section}>
-        <label className={Set.customlabel}>
-          Time Zone:
-          <select
-            value={timeZone}
-            onChange={(e) => setTimeZone(e.target.value)}
-            className={Set.select}
-            disabled={!isEditing}
-          >
-            <option value="UTC">UTC</option>
-            <option value="EST">EST</option>
-            <option value="PST">PST</option>
-          </select>
-        </label>
-      </section>
-
-      <button onClick={isEditing ? handleSaveClick : handleEditClick} className={Set.button}>
-        {isEditing ? 'Save' : 'Edit'}
-      </button>
+      </div>
     </div>
   );
 };

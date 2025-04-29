@@ -1,0 +1,88 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Invoice {
+  id            String        @id @default(uuid())
+  invoiceId     String        @unique
+  orderId       String
+  customerId    String
+  invoiceDate   DateTime
+  totalAmount   Float
+  totalTax      Float? // Make totalTax optional
+  paymentStatus PaymentStatus
+
+  // One-to-Many Relations
+  payments              Payment[]
+  taxes                 Tax[]
+  currencyExchangeRates CurrencyExchangeRate[]
+}
+
+enum PaymentStatus {
+  PENDING
+  HALF_PAYMENT
+  FULL_PAID
+}
+
+model Payment {
+  id          String      @id @default(uuid())
+  paymentId   String      @unique
+  invoiceId   String
+  orderId     String
+  customerId  String
+  amountPaid  Float
+  paymentDate DateTime
+  paymentMode PaymentMode
+
+  // Relation to Invoice
+  invoice Invoice @relation(fields: [invoiceId], references: [invoiceId], onDelete: Cascade)
+}
+
+enum PaymentMode {
+  ONLINE
+  CASH
+}
+
+model Tax {
+  id            String  @id @default(uuid())
+  taxId         String  @unique
+  invoiceId     String
+  orderId       String
+  customerId    String
+  region        String
+  taxType       TaxType
+  taxPercentage Float
+
+  // Relation to Invoice
+  invoice Invoice @relation(fields: [invoiceId], references: [invoiceId], onDelete: Cascade)
+}
+
+enum TaxType {
+  CGST
+  SGST
+  IGST
+}
+
+model CurrencyExchangeRate {
+  id            String   @id @default(uuid())
+  invoiceId     String
+  orderId       String
+  customerId    String
+  currencyCode  String
+  effectiveDate DateTime
+  exchangeRate  Float
+
+  // Relation to Invoice
+  invoice Invoice @relation(fields: [invoiceId], references: [invoiceId], onDelete: Cascade)
+}

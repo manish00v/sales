@@ -7,12 +7,47 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// model Notification {
+//   id        Int      @id @default(autoincrement())
+//   type      String   
+//   orderId   String
+//   // paymentId String?
+//   // invoiceId String?
+
+//   message   String
+//   timestamp DateTime @default(now())
+// }
+
+// model Notification {
+//   id        String   @id @default(uuid())
+//   service   String   // Add this
+//   event     String   // Add this
+//   type      String
+//   message   String
+//   orderId   String? 
+//   shipmentId String?
+//   paymentId  String?
+//   inventoryId String?
+//   vehicleId   String? 
+//   invoiceId   String?// Optional reference
+//   timestamp DateTime @default(now())
+//   metadata  Json?    // For storing additional data
+// }
+
+
 model Notification {
-  id        Int      @id @default(autoincrement())
-  type      String   
-  orderId   Int?
+  id        String   @id @default(uuid())
+  service   String
+  event     String
+  type      String
   message   String
+  orderId   String?
+  metadata  Json?
   timestamp DateTime @default(now())
+
+  @@index([service])
+  @@index([event])
+  @@index([orderId])
 }
 
 model Settings {

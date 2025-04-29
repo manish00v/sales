@@ -1,0 +1,45 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Partner {
+  id              Int      @id @default(autoincrement())
+  partnerType     String   @db.Char(3)
+  partnerCategory String   @db.Char(1)
+  function        String   @db.Char(3)
+  partnerId       Int      @unique
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("partners")
+}
+
+enum PartnerType {
+  CUSTOMER
+  SUPPLIER
+}
+
+enum PartnerCategory {
+  INDIVIDUAL
+  BUSINESS
+  GROUP_ORGANISATION
+}
+
+enum PartnerFunction {
+  ORDERING_ENTITY
+  RECEIVING_ENTITY
+  INVOICING_ENTITY
+  PAYING_ENTITY
+}

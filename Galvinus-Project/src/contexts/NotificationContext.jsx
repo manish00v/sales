@@ -5,77 +5,88 @@ export const NotificationContext = createContext();
 export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [ws, setWs] = useState(null);
 
-  // Load notifications from localStorage on component mount
+  // Load notifications from localStorage on mount
   useEffect(() => {
     const savedNotifications = JSON.parse(localStorage.getItem("notifications")) || [];
     setNotifications(savedNotifications);
   }, []);
 
-  // Save notifications to localStorage whenever they change
+  // Save to localStorage when notifications change
   useEffect(() => {
     localStorage.setItem("notifications", JSON.stringify(notifications));
   }, [notifications]);
 
-  // Handle online/offline status
+  // WebSocket connection management
+  useEffect(() => {
+    const websocket = new WebSocket('ws://localhost:8080');
+  
+    websocket.onopen = () => {
+      console.log('WebSocket connection established');
+      // Send a test message to verify connection
+      websocket.send(JSON.stringify({
+        type: 'connection_test',
+        message: 'Frontend connected'
+      }));
+    };
+  
+    websocket.onmessage = (event) => {
+      console.log('Raw WebSocket message:', event.data); // Log raw data first
+      try {
+        const data = JSON.parse(event.data);
+        console.log('Parsed notification:', data);
+        
+        const newNotification = {
+          id: data.id || Date.now(),
+          type: data.type || 'general',
+          service: data.service || 'unknown-service',
+          orderId: data.metadata?.orderId || data.data?.orderId || 'N/A',
+          message: data.message || 'New notification',
+          timestamp: new Date(data.timestamp || new Date()).toLocaleString(),
+          isRead: false
+        };
+  
+        setNotifications(prev => [newNotification, ...prev]);
+      } catch (error) {
+        console.error('Error parsing WebSocket message:', error);
+      }
+    };
+
+    websocket.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
+
+    websocket.onclose = () => {
+      console.log('WebSocket disconnected');
+      setWs(null);
+    };
+
+    return () => {
+      websocket.close();
+    };
+  }, []);
+
+  // Network status detection
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
 
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
 
     return () => {
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
     };
   }, []);
 
-  // Connect to WebSocket server
-  useEffect(() => {
-    const ws = new WebSocket('ws://localhost:8080');
-
-    ws.onopen = () => {
-        console.log('WebSocket connection established');
-    };
-
-    ws.onmessage = (event) => {
-        console.log('WebSocket message received:', event.data);
-        const notification = JSON.parse(event.data);
-        addNotification(notification.type, notification.orderId);
-    };
-
-    ws.onerror = (error) => {
-        console.error('WebSocket error:', error);
-    };
-
-    ws.onclose = () => {
-        console.log('WebSocket connection closed');
-    };
-
-    return () => {
-        ws.close();
-    };
-}, []);
-
-  // Add a new notification
-  const addNotification = (type, orderId) => {
-    const newNotification = {
-      id: Date.now(),
-      type,
-      orderId,
-      timestamp: new Date().toLocaleString(),
-      isRead: false,
-    };
-
-    setNotifications((prev) => [newNotification, ...prev]);
-  };
-
-  // Mark a notification as read
   const markAsRead = (id) => {
-    setNotifications((prev) =>
-      prev.map((notification) =>
-        notification.id === id ? { ...notification, isRead: true } : notification
+    setNotifications(prev =>
+      prev.map(notification =>
+        notification.id === id 
+          ? { ...notification, isRead: true } 
+          : notification
       )
     );
   };
@@ -85,8 +96,8 @@ export const NotificationProvider = ({ children }) => {
       value={{
         notifications,
         isOnline,
-        addNotification,
-        markAsRead,
+        ws,
+        markAsRead
       }}
     >
       {children}

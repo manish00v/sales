@@ -1,0 +1,193 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Partner {
+  id              Int      @id @default(autoincrement())
+  partnerType     String
+  partnerCategory String
+  function        String
+  partnerId       Int
+  name            String?
+  email           String?
+  phone           String?
+  address         String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("partners") // Ensure this maps to your actual table name
+}
+
+enum PartnerType {
+  CUSTOMER
+  SUPPLIER
+}
+
+enum PartnerCategory {
+  INDIVIDUAL
+  BUSINESS
+  GROUP_ORGANISATION
+}
+
+enum PartnerFunction {
+  ORDERING_ENTITY
+  RECEIVING_ENTITY
+  INVOICING_ENTITY
+  PAYING_ENTITY
+}
+
+
+model BasicData {
+  id                  Int      @id @default(autoincrement())
+  title               String?  @db.VarChar(10)
+  firstName           String?  @db.VarChar(35)
+  middleName          String?  @db.VarChar(35)
+  lastName            String?  @db.VarChar(35)
+  businessName        String?  @db.VarChar(60)
+  tradeName           String?  @db.VarChar(35)
+  phone               String?  @db.VarChar(20)
+  email               String?  @db.VarChar(35)
+  website             String?  @db.VarChar(35)
+  partnerClassification String?  @db.VarChar(2)
+  lifeCycleStatus     String?  @db.VarChar(10)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@map("basic_data")
+}
+
+enum Title {
+  MR
+  MS
+  MRS
+  DR
+}
+
+enum PartnerClassification {
+  A
+  B
+  C
+}
+
+enum LifeCycleStatus {
+  ACTIVE
+  INACTIVE
+  DUPLICATE
+  OBSOLETE
+}
+
+
+model Address {
+  id        Int      @id @default(autoincrement())
+  street1   String?  @db.VarChar(50)
+  street2   String?  @db.VarChar(50)
+  city      String?  @db.VarChar(20)
+  region    String?  @db.VarChar(20)
+  country   String?  @db.VarChar(20)
+  pinCode   String?  @db.VarChar(10)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("addresses")
+}
+
+
+model BankDetail {
+  id              Int      @id @default(autoincrement())
+  accountType     String   @db.VarChar(10)  // Required (no more nullable)
+  bankName        String   @db.VarChar(40)  // Required
+  holderName      String   @db.VarChar(40)  // Required
+  branchName      String   @db.VarChar(40)  // Required
+  addressLine1    String   @db.VarChar(50)  // Required
+  addressLine2    String?  @db.VarChar(50)  // Only this remains optional
+  city            String   @db.VarChar(40)  // Required
+  state           String   @db.VarChar(40)  // Required
+  country         String   @db.VarChar(40)  // Required
+  pinCode         String   @db.VarChar(10)  // Required
+  ifscCode        String   @db.VarChar(20)  // Required
+  micrCode        String   @db.VarChar(20)  // Required
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("bank_details")
+}
+
+enum BankAccountType {
+  CURRENT
+  SAVINGS
+}
+
+
+
+model Account {
+  id                    Int      @id @default(autoincrement())
+  businessEntityCode    String   @db.VarChar(4)
+  accountReceivableGL   String   @db.VarChar(4)
+  accountPayableGL      String   @db.VarChar(4)
+  gstin                 String   @db.VarChar(20)
+  vatNumber             String   @db.VarChar(15)
+  pan                   String   @db.VarChar(10)
+  tan                   String   @db.VarChar(10)
+  currency              String   @db.VarChar(30)
+  paymentMethod         String   @db.VarChar(15)
+  invoicingMethod       String   @db.VarChar(10)
+  paymentToleranceDays  Int
+  creditStatus          String   @db.VarChar(30)
+  accountantPhone       String   @db.VarChar(30)
+  accountantEmail       String   @db.VarChar(30)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@map("accounts")
+}
+
+enum Currency {
+  INR
+  EURO
+  USD
+}
+
+enum PaymentMethod {
+  BANK_TRANSFER
+  CARD
+  DIGITAL_PAYMENT
+  PLATFORMS
+}
+
+enum InvoicingMethod {
+  EMAIL
+  E_INVOICE
+  POST
+}
+
+enum CreditStatus {
+  PAY_IN_ADVANCE
+  OUTSTANDING_PAYMENTS
+}
+
+
+model RelatedParty {
+  id               Int       @id @default(autoincrement())
+  orderingParty    String?   @db.VarChar(20)
+  receivingParty   String?   @db.VarChar(20)
+  invoicingParty   String?   @db.VarChar(20)
+  payingParty      String?   @db.VarChar(20)
+  groupOrganisation String?  @db.VarChar(20)
+  salesPersonId    String?   @db.VarChar(4)
+  sourcingPersonId   String?   @db.VarChar(4)
+  contactPersonId  String?   @db.VarChar(20)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}

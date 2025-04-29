@@ -5,16 +5,16 @@ import FormPageHeader from "../../../../components/Layout/FormPageHeader/FormPag
 import "../../../../components/Layout/Styles/BoxFormStyles.css";
 
 export default function DisplaySalesOrderPage() {
-    const { setBtn, setGoBackUrl } = useContext(FormPageHeaderContext);
+    const { setGoBackUrl } = useContext(FormPageHeaderContext);
     const [orderId, setOrderId] = useState("");
     const [customerId, setCustomerId] = useState("");
     const [error, setError] = useState(null); // State to store error messages
     const navigate = useNavigate();
 
     useEffect(() => {
-        setBtn("Display");
+       
         setGoBackUrl("/salesorder");
-    }, [setBtn, setGoBackUrl]);
+    }, [setGoBackUrl]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
