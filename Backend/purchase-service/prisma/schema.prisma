@@ -1,0 +1,114 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model InventoryUnit {
+  id               String     @id @default(uuid())
+  InventoryUnitId  String     @unique @db.VarChar(4)
+  InventoryUnitName String    @db.VarChar(30)
+  InventoryControl  String    @db.VarChar(30)
+  StreetAddress    String     @db.VarChar(50)
+  City             String     @db.VarChar(30)
+  Region           String     @db.VarChar(20)
+  Country          String     @db.VarChar(30)
+  PinCode          String     @db.VarChar(6)
+  factoryUnitCode  String?    @db.VarChar(4) // Optional single factory unit code
+  inventoryBays    InventoryBay[] // Relation to InventoryBay
+
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  @@map("inventory_units")
+}
+model InventoryBay {
+  id               String   @id @default(uuid())
+  InventoryBayId   String   @db.VarChar(4)  // Removed @unique since multiple records can have same bay ID
+  InventoryBayName String   @db.VarChar(30)
+  StockingType     String   @db.VarChar(20)
+  StreetAddress    String   @db.VarChar(50)
+  City             String   @db.VarChar(30)
+  Region           String   @db.VarChar(20)
+  Country          String   @db.VarChar(30)
+  PinCode          String   @db.VarChar(6)
+  inventoryUnitId  String?  @db.VarChar(4)  // Single optional string
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  inventoryUnit    InventoryUnit? @relation(fields: [inventoryUnitId], references: [InventoryUnitId])
+
+  @@unique([InventoryBayId, inventoryUnitId], name: "bay_unit_unique") // Composite unique
+  @@map("inventory_bays")
+}
+model SourcingTeam {
+  id               String        @id @default(uuid())
+  SourcingTeamId   String        @unique @db.VarChar(4)
+  SourcingTeamName String        @db.VarChar(30)
+  TeamType         String        @db.VarChar(20)
+  StreetAddress    String        @db.VarChar(50)
+  City             String        @db.VarChar(30)
+  Region           String        @db.VarChar(20)
+  CountryCode      String        @db.VarChar(5)
+  PinCode          String        @db.VarChar(6)
+  PhoneNumber      String        @db.VarChar(12)
+  LandlineNumber   String        @db.VarChar(12)
+  Email            String        @db.VarChar(20)
+  sourcingUnitId   String?  @db.VarChar(4)  // Changed from array to optional string
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  // Ensure unique combination of team + sourcing unit
+  @@unique([SourcingTeamId, sourcingUnitId], name: "team_unit_unique")
+  @@map("sourcing_teams")
+}
+
+
+model SourcingUnit {
+  id               String   @id @default(uuid())
+  SourcingUnitId   String   @db.VarChar(4)
+  SourcingUnitDesc String   @db.VarChar(30)
+  factoryUnitCode    String   // Stores reference ID (no FK constraint)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Composite uniqueness (within this service's DB)
+  @@unique([SourcingUnitId, factoryUnitCode])
+  @@map("sourcing_units")
+}
+
+
+model ContactPerson {
+  id                String   @id @default(uuid())
+  CustomerId        String   @unique@db.VarChar(20)
+  ContactPersonId   String   @unique@db.VarChar(20)
+  FirstName         String   @db.VarChar(35)
+  MiddleName        String?  @db.VarChar(35)
+  LastName          String   @db.VarChar(35)
+  Department        String   @db.VarChar(20)
+  Function          String   @db.VarChar(30)
+  Gender            String   @db.VarChar(10)
+  Street1           String   @db.VarChar(50)
+  Street2           String?  @db.VarChar(50)
+  City              String   @db.VarChar(30)
+  State             String   @db.VarChar(30)
+  Region            String   @db.VarChar(50)
+  Country           String   @db.VarChar(30)
+  PinCode           String   @db.VarChar(6)
+  BusinessUnitCode  String   @db.VarChar(4)
+  SalesChannelId    String   @db.VarChar(30)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // @@unique([ContactPersonId], name: "ContactPersonId_unique")
+}
+
